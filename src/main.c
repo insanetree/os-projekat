@@ -5,11 +5,13 @@
 #include "../h/print.h"
 
 void main(){
-	printstr("hello");
-	//uint64 start = HEAP_START_ADDR;
-	//uint64 end = HEAP_END_ADDR;
-	//char c;
-	//while(start != 0){
-		
-	//}
+	printstr("hello\n");
+	uint64 start = (uint64)HEAP_START_ADDR;
+	uint64 end = (uint64)HEAP_END_ADDR;
+    printunum(123);
+    printstr("\n");
+    printunum(start);
+    printstr("\n");
+    printunum(end);
+    printstr("\n");
 }
