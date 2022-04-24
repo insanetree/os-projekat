@@ -6,5 +6,4 @@
 #include "../h/MemoryAllocator.h"
 
 void main() {
-	memory_init();
 }
