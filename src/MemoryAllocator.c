@@ -33,8 +33,7 @@ void __MA_mark_blocks(void*, size_t);
 void __MA_reserve_space() {
 	uint64 all_bytes = HEAP_END_ADDR - HEAP_START_ADDR;
 	uint64 res_bytes;
-	const uint8 two_bit_sections = 4;
-	uint64 div = two_bit_sections*MEM_BLOCK_SIZE + 1;
+	uint64 div = CRUMBS*MEM_BLOCK_SIZE + 1;
 
 	{//reserve the least amount of bytes needed to track all blocks
 		uint64 tmp;
