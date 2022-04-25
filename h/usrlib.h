@@ -4,6 +4,7 @@
 #include "../lib/hw.h"
 
 #define NULL 0
+#define CRUMBS 4
 
 uint64 __allign(uint64 a, uint64 b);
 

@@ -105,7 +105,25 @@ void* __MA_allocate(size_t size) {
 	return (void*)bstft;
 }
 
-
 void __MA_mark_blocks(void* ptr, size_t size) {
+	static const uint8 masks[] = {0x03, 0x0c, 0x30, 0xc0};
+	static const uint8 flags[] = {0x00, 0x55, 0xaa, 0xff};
+	uint8* base = (uint8*)HEAP_START_ADDR;
+	uint64 blocks = size / MEM_BLOCK_SIZE;
+	uint64 byte = (uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE*CRUMBS);
+	uint8 crumb = ((uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE)) % CRUMBS;
+	uint8 flg = 3;
 
+	{
+
+	}
+
+	while(blocks > 0){
+		base[byte] &= ~masks[crumb] & NULL;
+		base[byte] |= masks[crumb]&flags[flg];
+		crumb++;
+		crumb%=CRUMBS;
+		if(crumb==0) byte++;
+		blocks--;
+	}
 }
