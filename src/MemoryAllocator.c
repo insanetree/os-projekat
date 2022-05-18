@@ -111,14 +111,22 @@ void __MA_mark_blocks(void* ptr, size_t size) {
 	uint64 blocks = size / MEM_BLOCK_SIZE;
 	uint64 byte = (uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE*CRUMBS);
 	uint8 crumb = ((uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE)) % CRUMBS;
-	uint8 flg = 3;
+	uint8 flg = 3, flgBefore, flgAfter;
 
 	{
-
+		uint8 crumbBefore = (crumb - 1) % CRUMBS;
+		uint64 byteBefore = byte;
+		if(crumbBefore == 3){
+			if(byte)byteBefore--;
+			else crumbBefore=0;
+		}
+		flgBefore = (base[byteBefore]&masks[crumbBefore]) >> (crumbBefore*2);
+		uint8 crumbAfter;
+		uint64 byteAfter = byte + blocks/CRUMBS;
 	}
 
 	while(blocks > 0){
-		base[byte] &= ~masks[crumb] & NULL;
+		base[byte] &= ~masks[crumb];
 		base[byte] |= masks[crumb]&flags[flg];
 		crumb++;
 		crumb%=CRUMBS;
