@@ -30,6 +30,10 @@ void* __MA_allocate(size_t);
 */
 void __MA_mark_blocks(void*, size_t);
 
+uint8 __MA_get_crumb(uint64 byte, uint8 crumb);
+
+uint8 __MA_get_flag(uint8 f1, uint8 f2);
+
 void __MA_reserve_space() {
 	uint64 all_bytes = HEAP_END_ADDR - HEAP_START_ADDR;
 	uint64 res_bytes;
@@ -114,16 +118,21 @@ void __MA_mark_blocks(void* ptr, size_t size) {
 	uint8 flg = 3, flgBefore, flgAfter;
 
 	{
-		uint8 crumbBefore = (crumb - 1) % CRUMBS;
+		uint8 crumbBefore = (crumb - 1);
+		crumbBefore %= CRUMBS;
 		uint64 byteBefore = byte;
 		if(crumbBefore == 3){
 			if(byte)byteBefore--;
 			else crumbBefore=0;
 		}
-		flgBefore = (base[byteBefore]&masks[crumbBefore]) >> (crumbBefore*2);
-		uint8 crumbAfter;
-		uint64 byteAfter = byte + blocks/CRUMBS;
+		flgBefore = __MA_get_crumb(byteBefore, crumbBefore);
+
+		uint8 crumbAfter = (crumb + blocks)%CRUMBS;
+		uint64 byteAfter = byte + (crumb+blocks)/CRUMBS;
+		flgAfter = __MA_get_crumb(byteAfter, crumbAfter);
 	}
+
+	flg = __MA_get_flag(flgBefore, flgAfter);
 
 	while(blocks > 0){
 		base[byte] &= ~masks[crumb];
@@ -133,4 +142,20 @@ void __MA_mark_blocks(void* ptr, size_t size) {
 		if(crumb==0) byte++;
 		blocks--;
 	}
+}
+
+uint8 __MA_get_crumb(uint64 byte, uint8 crumb) {
+    static const uint8 masks[] = {0x03, 0x0c, 0x30, 0xc0};
+    uint8* base = (uint8*)HEAP_START_ADDR;
+    return (base[byte]&masks[crumb]) >> (crumb*2);
+}
+
+uint8 __MA_get_flag(uint8 f1, uint8 f2) {
+	uint8 map[4]={0, 0, 0, 0};
+	map[f1]++;
+	map[f2]++;
+	for(int i = 0 ; i < 4 ; i++){
+		if(map[i]==0) return i;
+	}
+	return 0; //never gets here
 }

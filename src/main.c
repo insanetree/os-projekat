@@ -8,6 +8,10 @@
 void main() {
 	__MA_memory_init();
 	printunum((uint64)FREE_SPACE_START);
-	uint8 * ptr = __MA_allocate(5*MEM_BLOCK_SIZE);
-	ptr[0]=0xff;
+	uint8 * ptr1 = __MA_allocate(5*MEM_BLOCK_SIZE);
+	uint8 * ptr2 = __MA_allocate(5*MEM_BLOCK_SIZE);
+	uint8 * ptr3 = __MA_allocate(100000000*MEM_BLOCK_SIZE);
+	ptr1[0]=0xff;
+	ptr2[0]=0xff;
+	ptr3[0]=0xff;
 }
