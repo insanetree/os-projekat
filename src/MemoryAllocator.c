@@ -34,6 +34,10 @@ uint8 __MA_get_crumb(uint64 byte, uint8 crumb);
 
 uint8 __MA_get_flag(uint8 f1, uint8 f2);
 
+uint64 __MA_get_free_size(void* ptr);
+
+void __MA_try_to_join(struct __MA_memory_block* b, struct __MA_memory_block* a);
+
 void __MA_reserve_space() {
 	uint64 all_bytes = HEAP_END_ADDR - HEAP_START_ADDR;
 	uint64 res_bytes;
@@ -76,7 +80,7 @@ void* __MA_allocate(size_t size) {
 		return NULL;
 
 	do {
-		if(i->size >= reqspc && (!bstft || bstft->size < i->size)) {
+		if(i->size >= reqspc && (!bstft || bstft->size > i->size)) {
 			prbstft = pri;
 			bstft = i;
 		}
@@ -159,3 +163,78 @@ uint8 __MA_get_flag(uint8 f1, uint8 f2) {
 	}
 	return 0; //never gets here
 }
+
+uint64 __MA_get_free_size(void* ptr) {
+	uint64 byte = (uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE*CRUMBS);
+	uint8 crumb = ((uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE)) % CRUMBS;
+	uint64 size=0;
+	uint8 flg = __MA_get_crumb(byte, crumb);
+	while(flg == __MA_get_crumb(byte, crumb++)){
+		size++;
+		if(crumb == 4){
+			crumb = 0;
+			byte++;
+		}
+	}
+	return size*MEM_BLOCK_SIZE;
+}
+
+void __MA_free(void* ptr){
+	size_t freeSize = __MA_get_free_size(ptr);
+	struct __MA_memory_block* newBlock = (struct __MA_memory_block*)ptr;
+	newBlock->size = freeSize;
+	newBlock->next = NULL;
+	struct __MA_memory_block* cur = FREE_SPACE_START;
+	struct __MA_memory_block* prev = NULL;
+	if(ptr < (void*)cur || cur == NULL) {
+		FREE_SPACE_START = (void*)newBlock;
+		newBlock->next = cur;
+	}
+	else {
+		while(cur != NULL && (void*)cur < ptr) {
+			prev = cur;
+			cur = cur->next;
+		}
+		prev->next = newBlock;
+		newBlock->next = cur;
+	}
+	__MA_try_to_join(newBlock, cur);
+	__MA_try_to_join(prev, newBlock);
+}
+
+void __MA_try_to_join(struct __MA_memory_block* b, struct __MA_memory_block* a){
+	if(a == NULL || b == NULL) return;
+	if((void*)b + b->size == (void*)a) {
+		b->size += a->size;
+		b->next = a->next;
+	}
+}
+
+/*
+ Ja dok krsim unix filozofiju:
+⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠛⠛⠋⠉⠈⠉⠉⠉⠉⠛⠻⢿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⢿⣿⣿⣿⣿
+⣿⣿⣿⣿⡏⣀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿
+⣿⣿⣿⢏⣴⣿⣷⠀⠀⠀⠀⠀⢾⣿⣿⣿⣿⣿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠈⣿⣿
+⣿⣿⣟⣾⣿⡟⠁⠀⠀⠀⠀⠀⢀⣾⣿⣿⣿⣿⣿⣷⢢⠀⠀⠀⠀⠀⠀⠀⢸⣿
+⣿⣿⣿⣿⣟⠀⡴⠄⠀⠀⠀⠀⠀⠀⠙⠻⣿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀⠀⠀⣿
+⣿⣿⣿⠟⠻⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠶⢴⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⣿
+⣿⣁⡀⠀⠀⢰⢠⣦⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⣿⣿⣿⣿⣿⡄⠀⣴⣶⣿⡄⣿
+⣿⡋⠀⠀⠀⠎⢸⣿⡆⠀⠀⠀⠀⠀⠀⣴⣿⣿⣿⣿⣿⣿⣿⠗⢘⣿⣟⠛⠿⣼
+⣿⣿⠋⢀⡌⢰⣿⡿⢿⡀⠀⠀⠀⠀⠀⠙⠿⣿⣿⣿⣿⣿⡇⠀⢸⣿⣿⣧⢀⣼
+⣿⣿⣷⢻⠄⠘⠛⠋⠛⠃⠀⠀⠀⠀⠀⢿⣧⠈⠉⠙⠛⠋⠀⠀⠀⣿⣿⣿⣿⣿
+⣿⣿⣧⠀⠈⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠟⠀⠀⠀⠀⢀⢃⠀⠀⢸⣿⣿⣿⣿
+⣿⣿⡿⠀⠴⢗⣠⣤⣴⡶⠶⠖⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡸⠀⣿⣿⣿⣿
+⣿⣿⣿⡀⢠⣾⣿⠏⠀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⠉⠀⣿⣿⣿⣿
+⣿⣿⣿⣧⠈⢹⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿⣿
+⣿⣿⣿⣿⡄⠈⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣦⣄⣀⣀⣀⣀⠀⠀⠀⠀⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠙⣿⣿⡟⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠁⠀⠀⠹⣿⠃⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⡿⠛⣿⣿⠀⠀⠀⠀⠀⠀⠀⠀⢐⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⠿⠛⠉⠉⠁⠀⢻⣿⡇⠀⠀⠀⠀⠀⠀⢀⠈⣿⣿⡿⠉⠛⠛⠛⠉⠉
+⣿⡿⠋⠁⠀⠀⢀⣀⣠⡴⣸⣿⣇⡄⠀⠀⠀⠀⢀⡿⠄⠙⠛⠀⣀⣠⣤⣤⠄⠀
+ */

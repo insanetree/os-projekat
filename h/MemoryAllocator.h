@@ -7,5 +7,6 @@ extern void* FREE_SPACE_START;
 
 void __MA_memory_init();
 void* __MA_allocate(size_t size);
+void __MA_free(void* ptr);
 
 #endif //_MEMORYALLOCATOR_H
