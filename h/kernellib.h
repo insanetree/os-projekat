@@ -8,4 +8,6 @@
 
 uint64 __allign(uint64 a, uint64 b);
 
+void __init_system();
+
 #endif

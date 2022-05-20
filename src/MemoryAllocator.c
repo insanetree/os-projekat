@@ -1,5 +1,5 @@
 #include "../h/MemoryAllocator.h"
-#include "../h/usrlib.h"
+#include "../h/kernellib.h"
 
 void* RESERVED_END_ADDR; 
 void* FREE_SPACE_START;
