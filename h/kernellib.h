@@ -6,7 +6,7 @@
 #define NULL 0
 #define CRUMBS 4
 
-uint64 __allign(uint64 a, uint64 b);
+uint64 __align(uint64 what, uint64 to);
 
 void __init_system();
 

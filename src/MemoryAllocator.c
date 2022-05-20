@@ -45,14 +45,14 @@ void __MA_reserve_space() {
 
 	{//reserve the least amount of bytes needed to track all blocks
 		uint64 tmp;
-		tmp = __allign(all_bytes, div);
+		tmp = __align(all_bytes, div);
 		res_bytes = tmp / div;
 	}
 	
 	RESERVED_END_ADDR = (void*)HEAP_START_ADDR + res_bytes;
 	
 	//align reserved space to a block
-	RESERVED_END_ADDR = (void*)__allign((uint64)RESERVED_END_ADDR, MEM_BLOCK_SIZE);
+	RESERVED_END_ADDR = (void*) __align((uint64) RESERVED_END_ADDR, MEM_BLOCK_SIZE);
 }
 
 void __MA_memory_init() {
@@ -73,7 +73,7 @@ void* __MA_allocate(size_t size) {
 	struct __MA_memory_block* pri = NULL;
 	struct __MA_memory_block* bstft = NULL;
 	struct __MA_memory_block* prbstft;
-	uint64 reqspc = __allign(size, MEM_BLOCK_SIZE);
+	uint64 reqspc = __align(size, MEM_BLOCK_SIZE);
 
 	//if no free space
 	if(FREE_SPACE_START == NULL)
