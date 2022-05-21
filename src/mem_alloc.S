@@ -1,8 +1,6 @@
-.align 4
-.global __interrupt
-.global __interrupt_handler
+.global mem_alloc
 
-__interrupt:
+mem_alloc:
 	addi sp, sp, -256
 	sd x0, 0(sp)
 	sd x1, 8(sp)
@@ -37,11 +35,9 @@ __interrupt:
 	sd x30, 240(sp)
 	sd x31, 248(sp)
 
-	csrr s0, sepc
-	addi s0, s0, 4
-	csrw sepc, s0
-
-	call __interrupt_handler
+	mv a1, a0
+	addi a0, zero, 0x01
+	ecall
 
 	ld x31, 248(sp)
 	ld x30, 240(sp)
@@ -76,4 +72,4 @@ __interrupt:
 	ld x1, 8(sp)
 	ld x0, 0(sp)
 	addi sp, sp, 256
-	sret
+	ret

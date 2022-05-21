@@ -1,6 +1,8 @@
 #include "../h/kernellib.h"
 #include "../h/MemoryAllocator.h"
-#include "../lib/console.h" //DOK NE ZAVRSIM ULAZ I IZLAZ
+#include "../h/syscall_handlers.h"
+
+void __handle_syscall();
 
 uint64 __align(uint64 what, uint64 to);
 void __interrupt();
@@ -17,25 +19,32 @@ void __init_system() {
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
 
-	//go to user mode
 
 	//enable interrupt ALWAYS AT THE END
-	__asm__ volatile("csrs sstatus, 0x02");
+	//__asm__ volatile("csrs sstatus, 0x02");
 }
 
-void __interrupt_handler(){
+void __interrupt_handler() {
 	uint64 scause;
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
 		case ((1ul << 63) | 1):
-			__putc('t');
-			__putc('\n');
+			//timer
 			break;
 		case 8:
 		case 9:
-			__putc('e');
-			__putc('\n');
+			//ecall
+			__handle_syscall();
 			break;
 	}
-	console_handler();
+}
+
+void __handle_syscall() {
+	uint64 syscall;
+	__asm__ volatile("mv %0, a0":"=r"(syscall));
+	switch (syscall) {
+		case 0x01:
+			__mem_alloc();
+			break;
+	}
 }
