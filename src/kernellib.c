@@ -36,19 +36,17 @@ void __interrupt_handler() {
 			__asm__ volatile("addi t0, t0, 4");
 			__asm__ volatile("csrw sepc, t0");
 			__asm__ volatile("csrc sip, 0x02");
+			__asm__ volatile("sd a0, 80(fp)");
 			break;
 	}
 }
 
 void __handle_syscall() {
 	uint64 syscall;
-	int a;
 	__asm__ volatile("mv %0, a0":"=r"(syscall));
 	switch (syscall) {
 		case 0x01:
-			//__mem_alloc();
-			a = 0;
-			a++;
+			__mem_alloc();
 			break;
 	}
 }
