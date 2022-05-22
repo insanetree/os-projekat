@@ -37,10 +37,6 @@ __interrupt:
 	sd x30, 240(sp)
 	sd x31, 248(sp)
 
-	csrr s0, sepc
-	addi s0, s0, 4
-	csrw sepc, s0
-
 	call __interrupt_handler
 
 	ld x31, 248(sp)
