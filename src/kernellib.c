@@ -42,10 +42,13 @@ void __interrupt_handler() {
 
 void __handle_syscall() {
 	uint64 syscall;
+	int a;
 	__asm__ volatile("mv %0, a0":"=r"(syscall));
 	switch (syscall) {
 		case 0x01:
-			__mem_alloc();
+			//__mem_alloc();
+			a = 0;
+			a++;
 			break;
 	}
 }
