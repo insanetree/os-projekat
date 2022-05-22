@@ -180,6 +180,7 @@ uint64 __MA_get_free_size(void* ptr) {
 }
 
 void __MA_free(void* ptr){
+	if(ptr == NULL) return;
 	size_t freeSize = __MA_get_free_size(ptr);
 	struct __MA_memory_block* newBlock = (struct __MA_memory_block*)ptr;
 	newBlock->size = freeSize;

@@ -6,9 +6,9 @@
 
 int main() {
 	__init_system();
-	int* a = mem_alloc(0xab);
+	int* a = mem_alloc(0xfffffffffffffff);
 	__MA_free(a);
-	int* b = __MA_allocate(0xab);
+	int* b = __MA_allocate(0xfffffffffffffff);
 	if(a == b){
 		return 0;
 	}
