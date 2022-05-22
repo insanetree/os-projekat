@@ -9,5 +9,5 @@
 void main() {
 	__init_system();
 	int* a = mem_alloc(0xab);
-	a[0] = 2;
+	a++;
 }

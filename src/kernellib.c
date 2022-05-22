@@ -3,8 +3,6 @@
 #include "../h/syscall_handlers.h"
 
 void __handle_syscall();
-
-uint64 __align(uint64 what, uint64 to);
 void __interrupt();
 void __interrupt_handler();
 
@@ -18,7 +16,6 @@ void __init_system() {
 
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
-
 
 	//enable interrupt ALWAYS AT THE END
 	//__asm__ volatile("csrs sstatus, 0x02");
@@ -35,6 +32,10 @@ void __interrupt_handler() {
 		case 9:
 			//ecall
 			__handle_syscall();
+			__asm__ volatile("csrr t0, sepc");
+			__asm__ volatile("addi t0, t0, 4");
+			__asm__ volatile("csrw sepc, t0");
+			__asm__ volatile("csrc sip, 0x02");
 			break;
 	}
 }
