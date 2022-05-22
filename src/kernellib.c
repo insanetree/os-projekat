@@ -48,5 +48,8 @@ void __handle_syscall() {
 		case 0x01:
 			__mem_alloc();
 			break;
+		case 0x02:
+			__mem_free();
+			break;
 	}
 }

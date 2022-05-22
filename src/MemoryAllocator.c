@@ -179,8 +179,8 @@ uint64 __MA_get_free_size(void* ptr) {
 	return size*MEM_BLOCK_SIZE;
 }
 
-void __MA_free(void* ptr){
-	if(ptr == NULL) return;
+int __MA_free(void* ptr){
+	if(ptr == NULL) return -0x02;
 	size_t freeSize = __MA_get_free_size(ptr);
 	struct __MA_memory_block* newBlock = (struct __MA_memory_block*)ptr;
 	newBlock->size = freeSize;
@@ -201,6 +201,7 @@ void __MA_free(void* ptr){
 	}
 	__MA_try_to_join(newBlock, cur);
 	__MA_try_to_join(prev, newBlock);
+	return 0;
 }
 
 void __MA_try_to_join(struct __MA_memory_block* b, struct __MA_memory_block* a){

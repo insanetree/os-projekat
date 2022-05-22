@@ -6,13 +6,13 @@
 
 int main() {
 	__init_system();
+	int reta, retb;
 	int* a = mem_alloc(0xfffffffffffffff);
-	__MA_free(a);
-	int* b = __MA_allocate(0xfffffffffffffff);
-	if(a == b){
+	reta = mem_free(a);
+	int* b = mem_alloc(0xaa);
+	retb = mem_free(b);
+	if(reta < 0 && retb == 0){
 		return 0;
 	}
-	else {
-		return -1;
-	}
+	return -1;
 }
