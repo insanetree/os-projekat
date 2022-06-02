@@ -1,6 +1,7 @@
 #include "../h/kernellib.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_handlers.h"
+#include "../h/scheduler.h"
 
 void __handle_syscall();
 void __interrupt();
@@ -13,6 +14,8 @@ uint64 __align(uint64 what, uint64 to) {
 inline void __init_system() {
 	//memory initialization
 	__MA_memory_init();
+
+	__init_scheduler();
 
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));

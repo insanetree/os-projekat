@@ -1,9 +1,7 @@
-//
-// Created by insanetree on 6/1/22.
-//
-
 #ifndef OS1_PROJEKAT_TCB_H
 #define OS1_PROJEKAT_TCB_H
+
+#include "kernellib.h"
 
 typedef void(*Body)(void*);
 
