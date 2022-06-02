@@ -71,7 +71,6 @@ void* __pop_front(struct __list* list) {
 	if(!list) return NULL;
 	struct __node* front = list->head;
 	if(!front) return NULL;
-	if(list->head == list->tail) list->tail=NULL;
 	list->head = list->head->next;
 	void* data = front->d;
 	__MA_free(front);
