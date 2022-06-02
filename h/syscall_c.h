@@ -11,4 +11,6 @@ typedef struct __tcb* thread_t;
 
 int thread_create(thread_t* handle, void(*f)(void*), void* arg);
 
+void thread_dispatch();
+
 #endif //OS1_PROJEKAT_SYSCALL_C_H

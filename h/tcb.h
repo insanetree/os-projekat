@@ -28,6 +28,4 @@ void __thread_dispatch();
 
 void __switch_context(struct __tcb*, struct __tcb*);
 
-void __yield();
-
 #endif //OS1_PROJEKAT_TCB_H

@@ -25,7 +25,9 @@ inline void __init_system() {
 }
 
 void __interrupt_handler() {
-	register uint64 scause;
+	uint64 scause;
+	uint64 sepc;
+	__asm__ volatile("csrr %0, sepc":"=r"(sepc));
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
 		case ((1ul << 63) | 1):
@@ -34,18 +36,17 @@ void __interrupt_handler() {
 		case 8:
 		case 9:
 			//ecall
+			sepc+=4;
 			__handle_syscall();
-			__asm__ volatile("csrr t0, sepc");
-			__asm__ volatile("addi t0, t0, 4");
-			__asm__ volatile("csrw sepc, t0");
-			__asm__ volatile("csrc sip, 0x02");
 			__asm__ volatile("sd a0, 80(fp)");
 			break;
 	}
+	__asm__ volatile("csrw sepc, %0"::"r"(sepc));
+	__asm__ volatile("csrc sip, 0x02");
 }
 
 void __handle_syscall() {
-	register uint64 syscall;
+	uint64 syscall;
 	__asm__ volatile("mv %0, a0":"=r"(syscall));
 	switch (syscall) {
 		case 0x01:
@@ -56,6 +57,12 @@ void __handle_syscall() {
 			break;
 		case 0x11:
 			__thread_create_handler();
+			break;
+		case 0x12:
+			//thread_exit
+			break;
+		case 0x13:
+			__thread_dispatch();
 			break;
 	}
 }
@@ -78,6 +85,7 @@ void* __pop_front(struct __list* list) {
 	struct __node* front = list->head;
 	if(!front) return NULL;
 	list->head = list->head->next;
+	if(list->head == NULL) list->tail = NULL;
 	void* data = front->d;
 	__MA_free(front);
 	return data;

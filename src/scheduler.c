@@ -12,7 +12,7 @@ void __init_scheduler() {
 	threads->head = NULL;
 	threads->tail = NULL;
 	struct __tcb* kernel = __thread_create(NULL, NULL);
-	__scheduler_push(kernel);
+	//__scheduler_push(kernel);
 	running = kernel;
 }
 

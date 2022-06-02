@@ -13,10 +13,12 @@ void __thread_create_handler() {
 
 	*handle = __thread_create(body, arg);
 
-	if(*handle)
+	if(*handle) {
 		ret = 0;
-	else
+		__scheduler_push(*handle);
+	} else {
 		ret = -0x11;
+	}
 
 	__asm__ volatile("mv a0, %0"::"r"(ret));
 }

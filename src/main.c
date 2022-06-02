@@ -8,32 +8,43 @@
 int aa = 0;
 
 void a(void* ar){
-	aa++;
-	__thread_dispatch();
+	while(1) {
+		aa++;
+		__thread_dispatch();
+	}
 }
 
 int bb = 0;
 
 void b(void* ar){
-	bb++;
-	__thread_dispatch();
+	while(1) {
+		bb++;
+		__thread_dispatch();
+	}
 }
+
+int mm = 0;
 
 int main() {
 	__init_system();
 	thread_t ta;
+	thread_t tb;
 
 	int ret = thread_create(&ta, a, NULL);
-	ret++;
 
-	if(ret == 1){
-		ret++;
-	} else {
+	if(ret != 0){
 		return -1;
 	}
 
-	while(ta->finished == NO){
-		__thread_dispatch();
+	ret = thread_create(&tb, b, NULL);
+
+	if(ret != 0){
+		return -1;
+	}
+
+	while(aa < 10000 || bb < 10000){
+		mm++;
+		thread_dispatch();
 	}
 
 

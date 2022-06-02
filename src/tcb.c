@@ -1,13 +1,12 @@
 #include "../h/tcb.h"
 #include "../h/MemoryAllocator.h"
 
-void popsppspie(){
-	__asm__ volatile ("csrw sepc, ra");
-	__asm__ volatile ("sret");
+void some_jump() {
+	__asm__ volatile("csrw sepc, ra");
+	__asm__ volatile("sret");
 }
 
 void __thread_wrapper() {
-	popsppspie();
 	running->body(running->arg);
 	running->finished = YES;
 }
@@ -30,18 +29,15 @@ struct __tcb* __thread_create(Body body, void* arg) {
 	newThread->ra = (uint64) &__thread_wrapper;
 	newThread->finished = NO;
 
-	__scheduler_push(newThread);
+	//__scheduler_push(newThread);
 
 	return newThread;
 }
 
 void __thread_dispatch() {
 	struct __tcb* old = running;
-	if(old->finished == NO) __scheduler_push(old);
+	if(old->finished == NO)
+		__scheduler_push(old);
 	running = __scheduler_pop();
 	__switch_context(old, running);
-}
-
-void __yield() {
-	__asm__ volatile ("ecall");
 }
