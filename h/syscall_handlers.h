@@ -3,6 +3,7 @@
 
 #include "../h/kernellib.h"
 #include "../h/MemoryAllocator.h"
+#include "tcb.h"
 
 void __mem_alloc();
 void __mem_free();

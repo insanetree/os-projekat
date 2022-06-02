@@ -10,7 +10,7 @@ uint64 __align(uint64 what, uint64 to) {
 	return what % to ? what + (to - what % to) : what;
 }
 
-void __init_system() {
+inline void __init_system() {
 	//memory initialization
 	__MA_memory_init();
 
@@ -22,7 +22,7 @@ void __init_system() {
 }
 
 void __interrupt_handler() {
-	uint64 scause;
+	register uint64 scause;
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
 		case ((1ul << 63) | 1):
@@ -42,7 +42,7 @@ void __interrupt_handler() {
 }
 
 void __handle_syscall() {
-	uint64 syscall;
+	register uint64 syscall;
 	__asm__ volatile("mv %0, a0":"=r"(syscall));
 	switch (syscall) {
 		case 0x01:
@@ -52,4 +52,27 @@ void __handle_syscall() {
 			__mem_free();
 			break;
 	}
+}
+
+void __push_back(struct __list* list, void* elem) {
+	struct __node* newNode = __MA_allocate(sizeof(struct __node));
+	newNode->d = elem;
+	newNode->next = NULL;
+	if(!list->tail) {
+		list->tail = newNode;
+		list->head = newNode;
+	} else {
+		list->tail->next = newNode;
+		list->tail = newNode;
+	}
+}
+
+void* __pop_front(struct __list* list) {
+	if(!list) return NULL;
+	struct __node* front = list->head;
+	if(!front) return NULL;
+	list->head = list->head->next;
+	void* data = front->d;
+	__MA_free(front);
+	return data;
 }
