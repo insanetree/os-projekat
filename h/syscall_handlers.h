@@ -5,7 +5,9 @@
 #include "../h/MemoryAllocator.h"
 #include "tcb.h"
 
-void __mem_alloc();
-void __mem_free();
+void __mem_alloc_handler();
+void __mem_free_handler();
+
+void __thread_create_handler();
 
 #endif //OS1_PROJEKAT_SYSCALL_HANDLERS_H

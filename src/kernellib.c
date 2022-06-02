@@ -49,10 +49,13 @@ void __handle_syscall() {
 	__asm__ volatile("mv %0, a0":"=r"(syscall));
 	switch (syscall) {
 		case 0x01:
-			__mem_alloc();
+			__mem_alloc_handler();
 			break;
 		case 0x02:
-			__mem_free();
+			__mem_free_handler();
+			break;
+		case 0x11:
+			__thread_create_handler();
 			break;
 	}
 }

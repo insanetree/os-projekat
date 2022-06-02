@@ -1,6 +1,7 @@
 #include "../h/scheduler.h"
 #include "../h/kernellib.h"
 #include "../h/MemoryAllocator.h"
+#include "../h/tcb.h"
 
 struct __tcb* running = NULL;
 
@@ -8,6 +9,11 @@ struct __list* threads;
 
 void __init_scheduler() {
 	threads = __MA_allocate(sizeof(struct __list));
+	threads->head = NULL;
+	threads->tail = NULL;
+	struct __tcb* kernel = __thread_create(NULL, NULL);
+	__scheduler_push(kernel);
+	running = kernel;
 }
 
 void __scheduler_push(struct __tcb* newThread) {

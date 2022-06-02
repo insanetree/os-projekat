@@ -1,6 +1,6 @@
 #include "../h/syscall_handlers.h"
 
-void __mem_free(){
+void __mem_free_handler(){
 	void* ptr;
 	int ret;
 	__asm__ volatile("mv %0, a1":"=r"(ptr));

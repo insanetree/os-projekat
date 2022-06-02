@@ -7,7 +7,7 @@
 void* mem_alloc(size_t size);
 int mem_free(void* ptr);
 
-typedef struct __TCB* thread_t;
+typedef struct __tcb* thread_t;
 
 int thread_create(thread_t* handle, void(*f)(void*), void* arg);
 

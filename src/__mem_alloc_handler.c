@@ -2,7 +2,7 @@
 #include "../h/kernellib.h"
 #include "../h/MemoryAllocator.h"
 
-void __mem_alloc() {
+void __mem_alloc_handler() {
 	size_t size;
 	void* ptr;
 	__asm__ volatile("mv %0, a1":"=r"(size));
