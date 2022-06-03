@@ -21,17 +21,26 @@ inline void __init_system() {
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
 
 	//enable interrupt ALWAYS AT THE END
-	//__asm__ volatile("csrs sstatus, 0x02");
+	__asm__ volatile("csrs sstatus, 0x02");
 }
 
 void __interrupt_handler() {
 	uint64 scause;
 	uint64 sepc;
+	//uint64 sstatus;
+	//__asm__ volatile("csrr %0, sstatus":"=r"(sstatus));
 	__asm__ volatile("csrr %0, sepc":"=r"(sepc));
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
-		case ((1ul << 63) | 1):
-			//timer
+		case 0x8000000000000001UL:
+			running->time++;
+			if(running->time % DEFAULT_TIME_SLICE == 0) {
+				__thread_dispatch();
+			}
+			//__asm__ volatile("csrci sip, 0x20");
+			break;
+		case 0x8000000000000009UL:
+			console_handler();
 			break;
 		case 8:
 		case 9:
@@ -41,8 +50,11 @@ void __interrupt_handler() {
 			__asm__ volatile("sd a0, 80(fp)");
 			break;
 	}
+	__asm__ volatile("csrci sip, 0x02");
+
+	//__asm__ volatile("csrw sstatus, %0"::"r"(sstatus));
 	__asm__ volatile("csrw sepc, %0"::"r"(sepc));
-	__asm__ volatile("csrc sip, 0x02");
+
 }
 
 void __handle_syscall() {

@@ -2,11 +2,15 @@
 #include "../h/MemoryAllocator.h"
 
 void some_jump() {
+	//uint64 spie = 0x20;// spp = 0x80;
 	__asm__ volatile("csrw sepc, ra");
+	//__asm__ volatile("csrs sstatus, %0"::"r"(spie));
+	//__asm__ volatile("csrc sstatus, %0"::"r"(spp));
 	__asm__ volatile("sret");
 }
 
 void __thread_wrapper() {
+	some_jump();
 	running->body(running->arg);
 	running->finished = YES;
 }
@@ -27,6 +31,7 @@ struct __tcb* __thread_create(Body body, void* arg) {
 	newThread->arg = arg;
 	newThread->body = body;
 	newThread->ra = (uint64) &__thread_wrapper;
+	newThread->time = 0;
 	newThread->finished = NO;
 
 	//__scheduler_push(newThread);

@@ -17,6 +17,7 @@ struct __tcb {
 	void* stack;
 	Body body;
 	void* arg;
+	uint64 time;
 	enum thread_finished finished;
 };
 

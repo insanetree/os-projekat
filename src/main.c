@@ -3,14 +3,14 @@
 //my header files
 #include "../h/kernellib.h"
 #include "../h/syscall_c.h"
-#include "../h/tcb.h"
 
 int aa = 0;
 
 void a(void* ar){
 	while(1) {
+		for(uint64 i = 0 ; i < 0x8000000000000009UL ; i++);
 		aa++;
-		__thread_dispatch();
+		//thread_dispatch();
 	}
 }
 
@@ -18,8 +18,9 @@ int bb = 0;
 
 void b(void* ar){
 	while(1) {
+		for(uint64 i = 0 ; i < 0x8000000000000009UL ; i++);
 		bb++;
-		__thread_dispatch();
+		//thread_dispatch();
 	}
 }
 
@@ -29,6 +30,8 @@ int main() {
 	__init_system();
 	thread_t ta;
 	thread_t tb;
+
+
 
 	int ret = thread_create(&ta, a, NULL);
 
@@ -42,7 +45,9 @@ int main() {
 		return -1;
 	}
 
-	while(aa < 10000 || bb < 10000){
+	while(1);
+
+	while(aa < 100 || bb < 100){
 		mm++;
 		thread_dispatch();
 	}

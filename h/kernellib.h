@@ -2,6 +2,7 @@
 #define _USRLIB_H_
 
 #include "../lib/hw.h"
+#include "../lib/console.h"
 
 #define NULL 0
 #define CRUMBS 4
