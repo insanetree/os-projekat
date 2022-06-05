@@ -8,9 +8,10 @@ extern struct __node* exited;
 
 typedef void(*Body)(void*);
 
-enum thread_finished {
-	YES,
-	NO
+enum thread_state {
+	FINISHED,
+	READY,
+	BLOCKED
 };
 
 struct __tcb {
@@ -20,7 +21,7 @@ struct __tcb {
 	Body body;
 	void* arg;
 	uint64 time;
-	enum thread_finished finished;
+	enum thread_state state;
 };
 
 void __thread_wrapper();

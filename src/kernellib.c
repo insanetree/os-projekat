@@ -26,12 +26,21 @@ inline void __init_system() {
 }
 
 void __interrupt_handler() {
+	uint64 a0, a1, a2, a3;
+	__asm__ volatile("mv %0, a0":"=r"(a0));
+	__asm__ volatile("mv %0, a1":"=r"(a1));
+	__asm__ volatile("mv %0, a2":"=r"(a2));
+	__asm__ volatile("mv %0, a3":"=r"(a3));
 	if(running->body == NULL)
 		__clear_exit_stack();
+
+	__asm__ volatile("mv a0, %0"::"r"(a0));
+	__asm__ volatile("mv a1, %0"::"r"(a1));
+	__asm__ volatile("mv a2, %0"::"r"(a2));
+	__asm__ volatile("mv a3, %0"::"r"(a3));
+
 	uint64 scause;
 	uint64 sepc;
-	//uint64 sstatus;
-	//__asm__ volatile("csrr %0, sstatus":"=r"(sstatus));
 	__asm__ volatile("csrr %0, sepc":"=r"(sepc));
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
@@ -40,7 +49,6 @@ void __interrupt_handler() {
 			if(running->time % DEFAULT_TIME_SLICE == 0) {
 				__thread_dispatch();
 			}
-			//__asm__ volatile("csrci sip, 0x20");
 			break;
 		case 0x8000000000000009UL:
 			console_handler();
@@ -54,10 +62,7 @@ void __interrupt_handler() {
 			break;
 	}
 	__asm__ volatile("csrci sip, 0x02");
-
-	//__asm__ volatile("csrw sstatus, %0"::"r"(sstatus));
 	__asm__ volatile("csrw sepc, %0"::"r"(sepc));
-
 }
 
 void __handle_syscall() {
@@ -78,6 +83,9 @@ void __handle_syscall() {
 			break;
 		case 0x13:
 			__thread_dispatch();
+			break;
+		case 0x21:
+			__sem_open_handler();
 			break;
 	}
 }

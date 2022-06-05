@@ -27,7 +27,7 @@ struct __tcb* __thread_create(Body body, void* arg) {
 		newThread->stack = NULL;
 		newThread->sp = 0;
 	} else {
-		newThread->stack = __MA_allocate(DEFAULT_STACK_SIZE);
+		newThread->stack = __MA_allocate(2*DEFAULT_STACK_SIZE);
 		newThread->sp = (uint64)(newThread->stack + DEFAULT_STACK_SIZE);
 	}
 
@@ -35,7 +35,7 @@ struct __tcb* __thread_create(Body body, void* arg) {
 	newThread->body = body;
 	newThread->ra = (uint64) &__thread_wrapper;
 	newThread->time = 0;
-	newThread->finished = NO;
+	newThread->state = READY;
 
 	//__scheduler_push(newThread);
 
@@ -44,14 +44,14 @@ struct __tcb* __thread_create(Body body, void* arg) {
 
 void __thread_dispatch() {
 	struct __tcb* old = running;
-	if(old->finished == NO)
+	if(old->state == READY)
 		__scheduler_push(old);
 	running = __scheduler_pop();
 	__switch_context(old, running);
 }
 
 void __thread_exit() {
-	running->finished = YES;
+	running->state = FINISHED;
 	__push_exit_stack(running);
 	__thread_dispatch();
 }
