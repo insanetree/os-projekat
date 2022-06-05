@@ -12,13 +12,13 @@ uint64 __align(uint64 what, uint64 to);
 void __init_system();
 
 struct __node {
-    void* d;
-    struct __node* next;
+	void* d;
+	struct __node* next;
 };
 
 struct __list {
-    struct __node* head;
-    struct __node* tail;
+	struct __node* head;
+	struct __node* tail;
 };
 
 void __push_back(struct __list* list, void* elem);

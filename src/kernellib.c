@@ -2,6 +2,7 @@
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_handlers.h"
 #include "../h/scheduler.h"
+#include "../h/tcb.h"
 
 void __handle_syscall();
 void __interrupt();
@@ -25,6 +26,8 @@ inline void __init_system() {
 }
 
 void __interrupt_handler() {
+	if(running->body == NULL)
+		__clear_exit_stack();
 	uint64 scause;
 	uint64 sepc;
 	//uint64 sstatus;
@@ -71,7 +74,7 @@ void __handle_syscall() {
 			__thread_create_handler();
 			break;
 		case 0x12:
-			//thread_exit
+			__thread_exit_handler();
 			break;
 		case 0x13:
 			__thread_dispatch();
