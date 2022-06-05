@@ -4,6 +4,8 @@
 #include "kernellib.h"
 #include "scheduler.h"
 
+extern struct __node* exited;
+
 typedef void(*Body)(void*);
 
 enum thread_finished {
@@ -24,6 +26,15 @@ struct __tcb {
 void __thread_wrapper();
 
 struct __tcb* __thread_create(Body, void*);
+
+void __push_exit_stack(struct __tcb*);
+
+/**
+ * only supposed to be run by kernel thread (body == NULL)
+ */
+void __clear_exit_stack();
+
+void __thread_exit();
 
 void __thread_dispatch();
 

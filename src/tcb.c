@@ -1,6 +1,8 @@
 #include "../h/tcb.h"
 #include "../h/MemoryAllocator.h"
 
+struct __node* exited = NULL;
+
 void some_jump() {
 	//uint64 spie = 0x20;// spp = 0x80;
 	__asm__ volatile("csrw sepc, ra");
@@ -45,4 +47,30 @@ void __thread_dispatch() {
 		__scheduler_push(old);
 	running = __scheduler_pop();
 	__switch_context(old, running);
+}
+
+void __thread_exit() {
+	running->finished = YES;
+	__push_exit_stack(running);
+	__thread_dispatch();
+}
+
+void __push_exit_stack(struct __tcb* thread) {
+	struct __node* newNode = __MA_allocate(sizeof(struct __node));
+	newNode->next = exited;
+	newNode->d = thread;
+	exited = newNode;
+}
+
+void __clear_exit_stack() {
+	struct __node* cur = exited;
+	struct __node* prev;
+	while(cur != NULL) {
+		prev = cur;
+		cur = cur->next;
+		__MA_free(((struct __tcb*)(prev->d))->stack);
+		__MA_free(prev->d);
+		__MA_free(prev);
+	}
+	exited = NULL;
 }
