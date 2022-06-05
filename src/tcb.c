@@ -4,8 +4,6 @@
 
 struct __node* exited = NULL;
 
-struct __node* exited = NULL;
-
 void some_jump() {
 	//uint64 spie = 0x20;// spp = 0x80;
 	__asm__ volatile("csrw sepc, ra");

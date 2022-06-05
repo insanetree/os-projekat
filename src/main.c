@@ -7,6 +7,7 @@
 
 int aa = 0;
 int as = 0;
+int ae = 0;
 
 void a(void* ar){
 	while(as == 0){
@@ -14,11 +15,13 @@ void a(void* ar){
 		__putc('a');
 		__putc('\n');
 	}
-	thread_exit();
+	ae++;
+	//thread_exit();
 }
 
 int bb = 0;
 int bs = 0;
+int be = 0;
 
 void b(void* ar){
 	while(bs == 0){
@@ -26,7 +29,8 @@ void b(void* ar){
 		__putc('b');
 		__putc('\n');
 	}
-	thread_exit();
+	be++;
+	//thread_exit();
 }
 
 int mm = 0;
@@ -59,7 +63,7 @@ int main() {
 	as = 1;
 	bs = 1;
 
-	while(1);
+	while(ae == 0 || be == 0);
 
 	return 0;
 }
