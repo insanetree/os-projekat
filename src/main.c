@@ -71,5 +71,7 @@ int main() {
 		return -1;
 	}
 
+	sem_close(sem);
+
 	return 0;
 }

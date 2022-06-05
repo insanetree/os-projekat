@@ -18,8 +18,16 @@ void __push_sem(struct __semaphore* sem, struct __tcb* thread) {
 	__push_back(sem->threads, thread);
 }
 
-void __pop_sem(struct __semaphore* sem) {
+void __pop_sem(struct __semaphore* sem, enum thread_state state) {
 	struct __tcb* thread = __pop_front(sem->threads);
-	thread->state = READY;
+	thread->state = state;
 	__scheduler_push(thread);
+}
+
+void __sem_close(struct __semaphore* sem) {
+	while(sem->threads->head != NULL) {
+		__pop_sem(sem, IRREGULAR_POST);
+	}
+	__MA_free(sem->threads);
+	__MA_free(sem);
 }

@@ -11,7 +11,8 @@ typedef void(*Body)(void*);
 enum thread_state {
 	FINISHED,
 	READY,
-	BLOCKED
+	BLOCKED,
+	IRREGULAR_POST
 };
 
 struct __tcb {

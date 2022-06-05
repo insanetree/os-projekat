@@ -10,5 +10,6 @@ void __mem_free_handler();
 void __thread_exit_handler();
 void __thread_create_handler();
 void __sem_open_handler();
+void __sem_close_handler();
 
 #endif //OS1_PROJEKAT_SYSCALL_HANDLERS_H
