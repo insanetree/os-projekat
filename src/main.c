@@ -37,10 +37,10 @@ int mm = 0;
 
 int main() {
 	__init_system();
-	thread_t ta = NULL;
-	thread_t tb = NULL;
+	static thread_t ta = NULL;
+	static thread_t tb = NULL;
 
-	sem_t sem = NULL;
+	static sem_t sem = NULL;
 
 	int ret = thread_create(&ta, a, NULL);
 
