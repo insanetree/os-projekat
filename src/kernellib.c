@@ -93,6 +93,9 @@ void __handle_syscall() {
 		case 0x23:
 			__sem_wait_handler();
 			break;
+		case 0x24:
+			__sem_signal_handler();
+			break;
 	}
 }
 

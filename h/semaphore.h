@@ -20,4 +20,6 @@ void __sem_close(struct __semaphore* sem);
 
 int __sem_wait(struct __semaphore* sem);
 
+void __sem_signal(struct __semaphore* sem);
+
 #endif //OS1_PROJEKAT_SEMAPHORE_H

@@ -12,5 +12,6 @@ void __thread_create_handler();
 void __sem_open_handler();
 void __sem_close_handler();
 void __sem_wait_handler();
+void __sem_signal_handler();
 
 #endif //OS1_PROJEKAT_SYSCALL_HANDLERS_H

@@ -16,7 +16,7 @@ int ae = 0;
 void a(void* ar){
 	int ret;
 	ret = sem_wait(sem);
-	if(ret != 0) {
+	if(ret == 0) {
 		ae++;
 	}
 }
@@ -67,7 +67,7 @@ int main() {
 	bs = 1;
 
 
-	ret = sem_close(sem);
+	ret = sem_signal(sem);
 
 	if(ret != 0){
 		return -1;
@@ -75,8 +75,7 @@ int main() {
 
 	while(ae == 0 || be == 0);
 
-
-
+	sem_close(sem);
 
 	return 0;
 }

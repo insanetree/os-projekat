@@ -20,6 +20,8 @@ void __push_sem(struct __semaphore* sem, struct __tcb* thread) {
 
 void __pop_sem(struct __semaphore* sem, enum thread_state state) {
 	struct __tcb* thread = __pop_front(sem->threads);
+	if(thread == NULL)
+		return;
 	thread->state = state;
 	__scheduler_push(thread);
 }
@@ -44,4 +46,12 @@ int __sem_wait(struct __semaphore* sem) {
 		return -0x23;
 	}
 	return 0;
+}
+
+void __sem_signal(struct __semaphore* sem) {
+	sem->value++;
+	if(sem->value >= 0 && sem->threads->head != NULL) {
+		sem->value--;
+		__pop_sem(sem, READY);
+	}
 }
