@@ -20,6 +20,8 @@ typedef struct __semaphore* sem_t;
 
 int sem_open(sem_t* handle, uint64 init);
 
-int sem_close(sem_t hadle);
+int sem_close(sem_t handle);
+
+int sem_wait(sem_t handle);
 
 #endif //OS1_PROJEKAT_SYSCALL_C_H

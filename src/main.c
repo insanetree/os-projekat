@@ -5,18 +5,20 @@
 #include "../h/syscall_c.h"
 #include "../lib/console.h"
 
+thread_t ta = NULL;
+thread_t tb = NULL;
+
+sem_t sem = NULL;
+
 unsigned aa = 0;
-int as = 0;
 int ae = 0;
 
 void a(void* ar){
-	while(as == 0){
-		aa++;
-		//__putc('a');
-		//__putc('\n');
+	int ret;
+	ret = sem_wait(sem);
+	if(ret != 0) {
+		ae++;
 	}
-	ae++;
-	//thread_exit();
 }
 
 unsigned bb = 0;
@@ -37,12 +39,14 @@ int mm = 0;
 
 int main() {
 	__init_system();
-	static thread_t ta = NULL;
-	static thread_t tb = NULL;
+ 	int ret;
+	ret = sem_open(&sem, 0);
 
-	static sem_t sem = NULL;
+	if(ret != 0){
+		return -1;
+	}
 
-	int ret = thread_create(&ta, a, NULL);
+	ret = thread_create(&ta, a, NULL);
 
 	if(ret != 0){
 		return -1;
@@ -55,23 +59,24 @@ int main() {
 	}
 
 
-	while(aa < 100 || bb < 100){
+	while(bb < 100){
 		mm++;
 		thread_dispatch();
 	}
 
-	as = 1;
 	bs = 1;
 
-	while(ae == 0 || be == 0);
 
-	ret = sem_open(&sem, 1);
+	ret = sem_close(sem);
 
 	if(ret != 0){
 		return -1;
 	}
 
-	sem_close(sem);
+	while(ae == 0 || be == 0);
+
+
+
 
 	return 0;
 }

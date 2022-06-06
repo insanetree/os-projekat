@@ -31,3 +31,17 @@ void __sem_close(struct __semaphore* sem) {
 	__MA_free(sem->threads);
 	__MA_free(sem);
 }
+
+int __sem_wait(struct __semaphore* sem) {
+	sem->value--;
+	if(sem->value >= 0) {
+		return 0;
+	}
+	__push_sem(sem,running);
+	__thread_dispatch();
+	if(running->state == IRREGULAR_POST) {
+		running->state = READY;
+		return -0x23;
+	}
+	return 0;
+}
