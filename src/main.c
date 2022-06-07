@@ -3,6 +3,7 @@
 //my header files
 #include "../h/kernellib.h"
 #include "../h/syscall_c.h"
+#include "../h/sleeper.h"
 #include "../lib/console.h"
 
 thread_t ta = NULL;
@@ -15,6 +16,7 @@ int ae = 0;
 
 void a(void* ar){
 	int ret;
+	time_sleep(14);
 	ret = sem_wait(sem);
 	if(ret == 0) {
 		ae++;
@@ -26,6 +28,7 @@ int bs = 0;
 int be = 0;
 
 void b(void* ar){
+	time_sleep(5);
 	while(bs == 0){
 		bb++;
 		//__putc('b');
@@ -46,13 +49,13 @@ int main() {
 		return -1;
 	}
 
-	ret = thread_create(&ta, a, NULL);
+	ret = thread_create(&ta, a, (void*)0xaa);
 
 	if(ret != 0){
 		return -1;
 	}
 
-	ret = thread_create(&tb, b, NULL);
+	ret = thread_create(&tb, b, (void*)0xbb);
 
 	if(ret != 0){
 		return -1;

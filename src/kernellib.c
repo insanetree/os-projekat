@@ -3,6 +3,7 @@
 #include "../h/syscall_handlers.h"
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
+#include "../h/sleeper.h"
 
 void __handle_syscall();
 void __interrupt();
@@ -45,6 +46,7 @@ void __interrupt_handler() {
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
 	switch(scause) {
 		case 0x8000000000000001UL:
+			__sleep_pop();
 			running->time++;
 			if(running->time % DEFAULT_TIME_SLICE == 0) {
 				__thread_dispatch();
@@ -95,6 +97,9 @@ void __handle_syscall() {
 			break;
 		case 0x24:
 			__sem_signal_handler();
+			break;
+		case 0x31:
+			__time_sleep_handler();
 			break;
 	}
 }
