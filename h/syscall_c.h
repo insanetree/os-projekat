@@ -26,4 +26,6 @@ int sem_wait(sem_t handle);
 
 int sem_signal(sem_t handle);
 
+int time_sleep(time_t);
+
 #endif //OS1_PROJEKAT_SYSCALL_C_H
