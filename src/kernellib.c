@@ -26,7 +26,7 @@ inline void __init_system() {
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
 
 	//enable interrupt ALWAYS AT THE END
-	__asm__ volatile("csrs sstatus, 0x02");
+	//__asm__ volatile("csrs sstatus, 0x02");
 }
 
 void __interrupt_handler() {
@@ -105,6 +105,7 @@ void __handle_syscall() {
 			__time_sleep_handler();
 			break;
 		case 0x41:
+			__getc_handler();
 			break;
 		case 0x42:
 			__putc_handler();

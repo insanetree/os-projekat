@@ -18,6 +18,7 @@ void __sem_close_handler();
 void __sem_wait_handler();
 void __sem_signal_handler();
 void __time_sleep_handler();
+void __getc_handler();
 void __putc_handler();
 
 #ifdef __cplusplus

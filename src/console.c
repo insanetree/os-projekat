@@ -34,6 +34,13 @@ void console_handler() {
 		__sem_signal(oput);
 	}
 
+	while(*status & CONSOLE_RX_STATUS_BIT) {
+		__sem_wait(iput);
+		input_buffer[input_tail++] = *tx;
+		input_tail %= BUFFER_SIZE;
+		__sem_signal(itake);
+	}
+
 	plic_complete(irq);
 }
 
@@ -52,4 +59,13 @@ void output(char c) {
 	output_buffer[output_tail++] = c;
 	output_tail %= BUFFER_SIZE;
 	__sem_signal(otake);
+}
+
+char input() {
+	char out;
+	__sem_wait(itake);
+	out = output_buffer[output_head++];
+	output_head %= BUFFER_SIZE;
+	__sem_signal(iput);
+	return out;
 }
