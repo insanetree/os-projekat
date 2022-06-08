@@ -4,6 +4,7 @@
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
 #include "../h/sleeper.h"
+#include "../h/console.h"
 
 void __handle_syscall();
 void __interrupt();
@@ -18,6 +19,8 @@ inline void __init_system() {
 	__MA_memory_init();
 
 	__init_scheduler();
+
+	__init_console();
 
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
@@ -101,11 +104,21 @@ void __handle_syscall() {
 		case 0x31:
 			__time_sleep_handler();
 			break;
+		case 0x41:
+			break;
+		case 0x42:
+			__putc_handler();
+			break;
 	}
 }
 
-void __push_back(struct __list* list, void* elem) {
+int __push_back(struct __list* list, void* elem) {
 	struct __node* newNode = __MA_allocate(sizeof(struct __node));
+
+	if(newNode == NULL) {
+		return -1;
+	}
+
 	newNode->d = elem;
 	newNode->next = NULL;
 	if(!list->tail) {
@@ -115,6 +128,8 @@ void __push_back(struct __list* list, void* elem) {
 		list->tail->next = newNode;
 		list->tail = newNode;
 	}
+
+	return 0;
 }
 
 void* __pop_front(struct __list* list) {

@@ -4,7 +4,6 @@
 #include "../h/kernellib.h"
 #include "../h/syscall_c.h"
 #include "../h/sleeper.h"
-#include "../lib/console.h"
 
 thread_t ta = NULL;
 thread_t tb = NULL;
@@ -45,6 +44,9 @@ int main() {
  	int ret;
 	ret = sem_open(&sem, 0);
 
+	while(1)putc('x');
+
+
 	if(ret != 0){
 		return -1;
 	}
@@ -79,6 +81,7 @@ int main() {
 	while(ae == 0 || be == 0);
 
 	sem_close(sem);
+
 
 	return 0;
 }

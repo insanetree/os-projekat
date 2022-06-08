@@ -2,7 +2,6 @@
 #define _USRLIB_H_
 
 #include "../lib/hw.h"
-#include "../lib/console.h"
 
 #define NULL 0
 #define CRUMBS 4
@@ -25,7 +24,7 @@ struct __list {
 	struct __node* tail;
 };
 
-void __push_back(struct __list* list, void* elem);
+int __push_back(struct __list* list, void* elem);
 
 void* __pop_front(struct __list* list);
 
