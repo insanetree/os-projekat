@@ -30,7 +30,7 @@ void b(void* ar){
 	time_sleep(5);
 	while(bs == 0){
 		bb++;
-		//__putc('b');
+		//putc('b');
 		//__putc('\n');
 	}
 	be++;
@@ -44,7 +44,7 @@ int main() {
  	int ret;
 	ret = sem_open(&sem, 0);
 
-	while(1)putc('x');
+	putc('x');
 
 
 	if(ret != 0){

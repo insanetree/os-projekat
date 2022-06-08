@@ -15,6 +15,8 @@ void console_handler();
 
 void output(char c);
 
+char input();
+
 #ifdef __cplusplus
 }
 #endif

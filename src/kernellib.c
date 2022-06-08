@@ -105,6 +105,7 @@ void __handle_syscall() {
 			__time_sleep_handler();
 			break;
 		case 0x41:
+			__getc_handler();
 			break;
 		case 0x42:
 			__putc_handler();
