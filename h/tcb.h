@@ -4,6 +4,10 @@
 #include "kernellib.h"
 #include "scheduler.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct __node* exited;
 
 typedef void(*Body)(void*);
@@ -41,5 +45,10 @@ void __thread_exit();
 void __thread_dispatch();
 
 void __switch_context(struct __tcb*, struct __tcb*);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif //OS1_PROJEKAT_TCB_H

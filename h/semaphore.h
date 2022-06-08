@@ -5,6 +5,10 @@
 #include "tcb.h"
 #include "scheduler.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct __semaphore {
 	long value;
 	struct __list* threads;
@@ -21,5 +25,10 @@ void __sem_close(struct __semaphore* sem);
 int __sem_wait(struct __semaphore* sem);
 
 void __sem_signal(struct __semaphore* sem);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif //OS1_PROJEKAT_SEMAPHORE_H
