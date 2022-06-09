@@ -1,4 +1,4 @@
-#include "../h/syscall_cpp.h"
+#include "../h/syscall_cpp.hpp"
 
 void* operator new(size_t size) {
 	return mem_alloc(size);
@@ -8,7 +8,32 @@ void operator delete(void* ptr) {
 	mem_free(ptr);
 }
 
-Thread::~Thread() { }
+void threadWrapper(void* arg) {
+	Thread* thread = (Thread*)arg;
+	sem_wait(thread->startThread);
+	if(thread->body == nullptr)
+		thread->run();
+	else
+		thread->body(thread->argument);
+}
+
+Thread::Thread(void (* body)(void*), void* arg) : argument(arg), body(body) {
+	sem_open(&startThread, 0);
+	thread_create(&myHandle, threadWrapper, (void*)this);
+}
+
+Thread::Thread() {
+	sem_open(&startThread, 0);
+	thread_create(&myHandle, threadWrapper, (void*)this);
+}
+
+int Thread::start() {
+	return sem_signal(startThread);
+}
+
+Thread::~Thread() {
+	sem_close(startThread);
+}
 
 void Thread::dispatch() {
 	thread_dispatch();
@@ -32,4 +57,12 @@ int Semaphore::wait() {
 
 int Semaphore::signal() {
 	return sem_signal(myHandle);
+}
+
+char Console::getc() {
+	return ::getc();
+}
+
+void Console::putc(char c) {
+	::putc(c);
 }
