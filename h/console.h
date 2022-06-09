@@ -13,6 +13,8 @@ void __init_console();
 
 void console_handler();
 
+void console_handler_signal();
+
 void output(char c);
 
 char input();

@@ -44,8 +44,10 @@ int main() {
  	int ret;
 	ret = sem_open(&sem, 0);
 
-	putc('x');
 
+//	while(1)
+	for(int i = 0 ; i < 65 ; i++)
+		putc('a');
 
 	if(ret != 0){
 		return -1;

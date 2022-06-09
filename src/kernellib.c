@@ -56,7 +56,7 @@ void __interrupt_handler() {
 			}
 			break;
 		case 0x8000000000000009UL:
-			console_handler();
+			console_handler_signal();
 			break;
 		case 8:
 		case 9:

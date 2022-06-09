@@ -1,5 +1,6 @@
 #include "../h/console.h"
 #include "../h/semaphore.h"
+#include "../h/tcb.h"
 
 /*
  * everything is happening inside of kernel call
@@ -9,6 +10,9 @@
 char* tx;
 char* rx;
 char* status;
+
+struct __semaphore* handler_s;
+struct __tcb* handler_t;
 
 char input_buffer[BUFFER_SIZE];
 uint8 input_head;
@@ -22,29 +26,36 @@ uint8 output_tail;
 struct __semaphore* oput;
 struct __semaphore* otake;
 
+
+
 void console_handler() {
+	__sem_wait(handler_s);
 	int irq = plic_claim();
 	if(irq != CONSOLE_IRQ)
 		return;
 
-	while(*status & CONSOLE_TX_STATUS_BIT && output_head != output_tail) {
-		__sem_wait(otake);
-		*rx = output_buffer[output_head];
-		output_head = (output_head+1)%BUFFER_SIZE;
-		__sem_signal(oput);
-	}
+	while(1) {
 
-	while(*status & CONSOLE_RX_STATUS_BIT) {
-		__sem_wait(iput);
-		input_buffer[input_tail++] = *tx;
-		input_tail %= BUFFER_SIZE;
-		__sem_signal(itake);
+		while (*status & CONSOLE_TX_STATUS_BIT) {
+			__sem_wait(otake);
+			*rx = output_buffer[output_head];
+			output_head = (output_head + 1) % BUFFER_SIZE;
+			__sem_signal(oput);
+		}
+
+		while (*status & CONSOLE_RX_STATUS_BIT) {
+			__sem_wait(iput);
+			input_buffer[input_tail++] = *tx;
+			input_tail %= BUFFER_SIZE;
+			__sem_signal(itake);
+		}
 	}
 
 	plic_complete(irq);
 }
 
 void __init_console() {
+	handler_s = __sem_init(0);
 	iput = __sem_init(BUFFER_SIZE);
 	itake = __sem_init(0);
 	oput = __sem_init(BUFFER_SIZE);
@@ -52,6 +63,8 @@ void __init_console() {
 	tx = (char*)CONSOLE_TX_DATA;
 	rx = (char*)CONSOLE_RX_DATA;
 	status = (char*)CONSOLE_STATUS;
+	handler_t = __thread_create(console_handler, NULL);
+	__scheduler_push(handler_t);
 }
 
 void output(char c) {
@@ -68,4 +81,8 @@ char input() {
 	output_head %= BUFFER_SIZE;
 	__sem_signal(iput);
 	return out;
+}
+
+void console_handler_signal() {
+	__sem_signal(handler_s);
 }
