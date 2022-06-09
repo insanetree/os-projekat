@@ -50,8 +50,7 @@ int __sem_wait(struct __semaphore* sem) {
 
 void __sem_signal(struct __semaphore* sem) {
 	sem->value++;
-	if(sem->value >= 0 && sem->threads->head != NULL) {
-		sem->value--;
+	if(sem->value <= 0 && sem->threads->head != NULL) {
 		__pop_sem(sem, READY);
 	}
 }

@@ -24,8 +24,13 @@ protected:
 
 	virtual void run() {}
 
+	friend void threadWrapper(void*);
+
 private:
 	thread_t myHandle;
+	void* argument = nullptr;
+	sem_t startThread;
+	void (* body)(void*) = nullptr;
 };
 
 class Semaphore {
@@ -46,7 +51,11 @@ class PeriodicThread : public Thread {
 protected:
 	PeriodicThread(time_t period);
 
+	virtual void run() override;
+
 	virtual void periodicActivation() {}
+private:
+	time_t period;
 };
 
 class Console {
