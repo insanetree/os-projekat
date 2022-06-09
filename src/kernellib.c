@@ -4,7 +4,7 @@
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
 #include "../h/sleeper.h"
-#include "../h/console.h"
+#include "../lib/console.h"
 
 void __handle_syscall();
 void __interrupt();
@@ -20,13 +20,13 @@ inline void __init_system() {
 
 	__init_scheduler();
 
-	__init_console();
+	//__init_console();
 
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
 
 	//enable interrupt ALWAYS AT THE END
-	//__asm__ volatile("csrs sstatus, 0x02");
+	__asm__ volatile("csrs sstatus, 0x02");
 }
 
 void __interrupt_handler() {
@@ -56,7 +56,7 @@ void __interrupt_handler() {
 			}
 			break;
 		case 0x8000000000000009UL:
-			console_handler_signal();
+			console_handler();
 			break;
 		case 8:
 		case 9:
@@ -104,12 +104,7 @@ void __handle_syscall() {
 		case 0x31:
 			__time_sleep_handler();
 			break;
-		case 0x41:
-			__getc_handler();
-			break;
-		case 0x42:
-			__putc_handler();
-			break;
+
 	}
 }
 

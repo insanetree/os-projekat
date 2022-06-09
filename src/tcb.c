@@ -27,7 +27,11 @@ struct __tcb* __thread_create(Body body, void* arg) {
 		newThread->stack = NULL;
 		newThread->sp = 0;
 	} else {
-		newThread->stack = __MA_allocate(2*DEFAULT_STACK_SIZE);
+		newThread->stack = __MA_allocate(DEFAULT_STACK_SIZE);
+		if(newThread->stack == NULL) {
+			__MA_free(newThread);
+			return NULL;
+		}
 		newThread->sp = (uint64)(newThread->stack + DEFAULT_STACK_SIZE);
 	}
 

@@ -33,7 +33,7 @@ int sem_signal(sem_t handle);
 
 int time_sleep(time_t);
 
-const int EOF = -1;
+static const int EOF = -1;
 
 char getc();
 
