@@ -25,12 +25,16 @@ inline void __init_system() {
 	//set interrupt_handler address in stvec
 	__asm__ volatile("csrw stvec, %0 ": : "r" (&__interrupt));
 
+	//uint64 ueie = 0x322;
+
+	//__asm__ volatile("csrw sie, %0"::"r"(ueie));
+
 	//enable interrupt ALWAYS AT THE END
 	__asm__ volatile("csrs sstatus, 0x02");
 }
 
 void __interrupt_handler() {
-	uint64 a0, a1, a2, a3;
+	uint64 a0, a1, a2, a3, sstatus;
 	__asm__ volatile("mv %0, a0":"=r"(a0));
 	__asm__ volatile("mv %0, a1":"=r"(a1));
 	__asm__ volatile("mv %0, a2":"=r"(a2));
@@ -47,6 +51,7 @@ void __interrupt_handler() {
 	uint64 sepc;
 	__asm__ volatile("csrr %0, sepc":"=r"(sepc));
 	__asm__ volatile("csrr %0, scause":"=r"(scause));
+	__asm__ volatile("csrr %0, sstatus":"=r"(sstatus));
 	switch(scause) {
 		case 0x8000000000000001UL:
 			__sleep_pop();
@@ -68,6 +73,7 @@ void __interrupt_handler() {
 	}
 	__asm__ volatile("csrci sip, 0x02");
 	__asm__ volatile("csrw sepc, %0"::"r"(sepc));
+	__asm__ volatile("csrw sstatus, %0"::"r"(sstatus));
 }
 
 void __handle_syscall() {

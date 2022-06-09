@@ -8,7 +8,6 @@
 extern "C" {
 #endif
 
-extern struct __node* exited;
 
 typedef void(*Body)(void*);
 
@@ -27,7 +26,10 @@ struct __tcb {
 	void* arg;
 	uint64 time;
 	enum thread_state state;
+	struct __tcb* next;
 };
+
+extern struct __tcb* exited;
 
 void __thread_wrapper();
 

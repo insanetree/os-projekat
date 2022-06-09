@@ -2,10 +2,11 @@
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_c.h"
 
-struct __node* exited = NULL;
+struct __tcb* exited = NULL;
 
 void some_jump() {
-	//uint64 spie = 0x20;// spp = 0x80;
+	//uint64 spie = 0x20;//
+	//uint64 spp = 0x100;
 	__asm__ volatile("csrw sepc, ra");
 	//__asm__ volatile("csrs sstatus, %0"::"r"(spie));
 	//__asm__ volatile("csrc sstatus, %0"::"r"(spp));
@@ -61,20 +62,17 @@ void __thread_exit() {
 }
 
 void __push_exit_stack(struct __tcb* thread) {
-	struct __node* newNode = __MA_allocate(sizeof(struct __node));
-	newNode->next = exited;
-	newNode->d = thread;
-	exited = newNode;
+	thread->next = exited;
+	exited = thread;
 }
 
 void __clear_exit_stack() {
-	struct __node* cur = exited;
-	struct __node* prev;
+	struct __tcb* cur = exited;
+	struct __tcb* prev;
 	while(cur != NULL) {
 		prev = cur;
 		cur = cur->next;
-		__MA_free(((struct __tcb*)(prev->d))->stack);
-		__MA_free(prev->d);
+		__MA_free(prev->stack);
 		__MA_free(prev);
 	}
 	exited = NULL;
