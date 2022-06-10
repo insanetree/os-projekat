@@ -24,7 +24,7 @@ struct __tcb {
 	void* stack;
 	Body body;
 	void* arg;
-	uint64 time;
+	long time;
 	enum thread_state state;
 	struct __tcb* next;
 };
