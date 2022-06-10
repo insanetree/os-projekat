@@ -2,47 +2,42 @@
 #include "../h/MemoryAllocator.h"
 #include "../h/kernellib.h"
 
-struct __sleep_node* sleep_list = NULL;
+struct __tcb* sleep_list = NULL;
 
 int __sleep_push(time_t sleep_time) {
-	struct __sleep_node* newNode = __MA_allocate(sizeof(struct __sleep_node));
-	if(newNode == NULL)
-		return -1;
-	newNode->thread = running;
-	newNode->sleep_time = sleep_time;
+	running->time = sleep_time;
 	running->state = BLOCKED;
 
-	struct __sleep_node* cur = sleep_list;
-	struct  __sleep_node* prev = NULL;
+	struct __tcb* cur = sleep_list;
+	struct  __tcb* prev = NULL;
 	if(cur == NULL) {
-		sleep_list = newNode;
-		newNode->next = NULL;
+		sleep_list = running;
+		running->next = NULL;
 		return 0;
 	}
 
-	while(cur != NULL && cur->sleep_time < sleep_time) {
+	while(cur != NULL && cur->time < sleep_time) {
 		prev = cur;
 		cur = cur->next;
 	}
 
 	if(prev != NULL)
-		prev->next = newNode;
+		prev->next = running;
 	else
-		sleep_list = newNode;
-	newNode->next = cur;
+		sleep_list = running;
+	running->next = cur;
 	return 0;
 }
 
 void __sleep_pop() {
-	struct __sleep_node* cur = sleep_list;
+	struct __tcb* cur = sleep_list;
 	struct __tcb* thread;
 	while(cur) {
-		cur->sleep_time--;
-		if(cur->sleep_time <= 0) {
-			thread = cur->thread;
+		cur->time--;
+		if(cur->time <= 0) {
+			thread = cur;
 			thread->state = READY;
 			sleep_list = cur->next;
-			__MA_free(cur);
 			__scheduler_push(thread);
 		}
 		cur = cur->next;
