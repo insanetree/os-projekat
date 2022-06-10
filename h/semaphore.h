@@ -11,7 +11,8 @@ extern "C" {
 
 struct __semaphore {
 	long value;
-	struct __list* threads;
+	struct __tcb* head;
+	struct __tcb* tail;
 };
 
 struct __semaphore* __sem_init(uint64 init);
