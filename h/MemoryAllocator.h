@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 extern void* FREE_SPACE_START;
+extern void* BUDDY_START_ADDR;
+extern void* BUDDY_END_ADDR;
 
 void __MA_memory_init();
 void* __MA_allocate(size_t size);

@@ -3,6 +3,8 @@
 
 void* RESERVED_END_ADDR; 
 void* FREE_SPACE_START;
+void* BUDDY_START_ADDR;
+void* BUDDY_END_ADDR;
 
 struct __MA_memory_block {
 	size_t size;
@@ -39,7 +41,9 @@ uint64 __MA_get_free_size(void* ptr);
 void __MA_try_to_join(struct __MA_memory_block* b, struct __MA_memory_block* a);
 
 void __MA_reserve_space() {
-	uint64 all_bytes = HEAP_END_ADDR - HEAP_START_ADDR;
+	BUDDY_START_ADDR = (void*)HEAP_START_ADDR;
+	BUDDY_END_ADDR = (void*)(BUDDY_START_ADDR + 0x800000); //16MiB for buddy
+	uint64 all_bytes = HEAP_END_ADDR - BUDDY_END_ADDR;
 	uint64 res_bytes;
 	uint64 div = CRUMBS*MEM_BLOCK_SIZE + 1;
 
