@@ -53,7 +53,7 @@ void __MA_reserve_space() {
 		res_bytes = tmp / div;
 	}
 	
-	RESERVED_END_ADDR = (void*)HEAP_START_ADDR + res_bytes;
+	RESERVED_END_ADDR = (void*)BUDDY_END_ADDR + res_bytes;
 	
 	//align reserved space to a block
 	RESERVED_END_ADDR = (void*) __align((uint64) RESERVED_END_ADDR, MEM_BLOCK_SIZE);
@@ -119,7 +119,7 @@ void* __MA_allocate(size_t size) {
 void __MA_mark_blocks(void* ptr, size_t size) {
 	static const uint8 masks[] = {0x03, 0x0c, 0x30, 0xc0};
 	static const uint8 flags[] = {0x00, 0x55, 0xaa, 0xff};
-	uint8* base = (uint8*)HEAP_START_ADDR;
+	uint8* base = (uint8*)BUDDY_END_ADDR;
 	uint64 blocks = size / MEM_BLOCK_SIZE;
 	uint64 byte = (uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE*CRUMBS);
 	uint8 crumb = ((uint64)(ptr - RESERVED_END_ADDR)/(MEM_BLOCK_SIZE)) % CRUMBS;
@@ -154,7 +154,7 @@ void __MA_mark_blocks(void* ptr, size_t size) {
 
 uint8 __MA_get_crumb(uint64 byte, uint8 crumb) {
     static const uint8 masks[] = {0x03, 0x0c, 0x30, 0xc0};
-    uint8* base = (uint8*)HEAP_START_ADDR;
+    uint8* base = (uint8*)BUDDY_END_ADDR;
     return (base[byte]&masks[crumb]) >> (crumb*2);
 }
 
