@@ -59,7 +59,7 @@ void *buddy_allocate(uint8 size) {
 void buddy_free(void *address, uint8 size) {
 	uint8 bucket = size - minBuddySize;
 	struct Buddy* block = (struct Buddy*)address;
-	buddy_put(block, size);
+	buddy_put(block, bucket);
 }
 
 void *buddy_get(uint8 bucket) {
