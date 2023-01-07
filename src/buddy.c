@@ -28,9 +28,9 @@ struct Buddy* buddy[numOfBuckets];
 void* buddy_get(uint8 size);
 /**
  * puts free block in ordered list
- * @param b free segment to put
+ * @param block free segment to put
  */
-void buddy_put(struct Buddy* block);
+void buddy_put(struct Buddy* block, uint8 size);
 void buddy_try_merge(struct Buddy* block);
 /**
  * shrinks first larger block to required size
@@ -77,8 +77,31 @@ void* buddy_shrink(uint8 size) {
 	struct Buddy* right;
 	while(startSize > size) {
 		startSize--;
-		right = (struct Buddy*) ((uint64)left + 1<<(startSize+minBuddySize));
-		buddy_put(right);
+		right = (struct Buddy*) ((uint64)left + (1<<(startSize+minBuddySize)));
+		buddy_put(right, startSize);
 	}
 	return left;
+}
+
+void buddy_put(struct Buddy* block, uint8 size) {
+	struct Buddy* cur = buddy[size];
+	if(!cur) {
+		block->next = block->prev = NULL;
+		buddy[size] = block;
+		return;
+	}
+	while(cur < block && cur->next)
+		cur = cur->next;
+	if(block < buddy[size]){
+		cur->prev = block;
+		block->next = cur;
+		block->prev = NULL;
+		buddy[size] = block;
+		return;
+	}
+	block->prev = cur;
+	block->next = cur->next;
+	if(cur->next)
+		cur->next->prev = block;
+	cur->next = block;
 }
