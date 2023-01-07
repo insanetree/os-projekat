@@ -57,49 +57,49 @@ void buddy_free(void *address) {
 
 }
 
-void *buddy_get(uint8 size) {
-	struct Buddy *ret = buddy[size];
-	if (buddy[size] == NULL) {
-		ret = buddy_shrink(size);
+void *buddy_get(uint8 bucket) {
+	struct Buddy *ret = buddy[bucket];
+	if (buddy[bucket] == NULL) {
+		ret = buddy_shrink(bucket);
 		if (!ret)
 			return NULL;
 	}
 	if (ret->next)
 		ret->next->prev = NULL;
-	buddy[size] = ret->next;
+	buddy[bucket] = ret->next;
 	return ret;
 }
 
-void *buddy_shrink(uint8 size) {
-	uint8 startSize = size + 1;
-	while (startSize < numOfBuckets && buddy[startSize] == NULL)
-		startSize++;
-	if (startSize == numOfBuckets)
+void *buddy_shrink(uint8 bucket) {
+	uint8 startBucket = bucket + 1;
+	while (startBucket < numOfBuckets && buddy[startBucket] == NULL)
+		startBucket++;
+	if (startBucket == numOfBuckets)
 		return NULL;
-	struct Buddy *left = buddy_get(startSize);
+	struct Buddy *left = buddy_get(startBucket);
 	struct Buddy *right;
-	while (startSize > size) {
-		startSize--;
-		right = (struct Buddy *) ((uint64) left + (1 << (startSize + minBuddySize)));
-		buddy_put(right, startSize);
+	while (startBucket > bucket) {
+		startBucket--;
+		right = (struct Buddy *) ((uint64) left + (1 << (startBucket + minBuddySize)));
+		buddy_put(right, startBucket);
 	}
 	return left;
 }
 
-void buddy_put(struct Buddy *block, uint8 size) {
-	struct Buddy *cur = buddy[size];
+void buddy_put(struct Buddy *block, uint8 bucket) {
+	struct Buddy *cur = buddy[bucket];
 	if (!cur) {
 		block->next = block->prev = NULL;
-		buddy[size] = block;
+		buddy[bucket] = block;
 		return;
 	}
 	while (cur < block && cur->next)
 		cur = cur->next;
-	if (block < buddy[size]) {
+	if (block < buddy[bucket]) {
 		cur->prev = block;
 		block->next = cur;
 		block->prev = NULL;
-		buddy[size] = block;
+		buddy[bucket] = block;
 	} else {
 		block->prev = cur;
 		block->next = cur->next;
@@ -107,7 +107,7 @@ void buddy_put(struct Buddy *block, uint8 size) {
 			cur->next->prev = block;
 		cur->next = block;
 	}
-	buddy_try_merge(cur, size);
+	buddy_try_merge(cur, bucket);
 }
 
 void buddy_try_merge(struct Buddy *block, uint8 bucket) {
