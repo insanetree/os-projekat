@@ -49,12 +49,17 @@ void buddy_init() {
 	buddy[numOfBuckets - 1] = first;
 }
 
-void *buddy_allocate(size_t size) {
-	return NULL;
+void *buddy_allocate(uint8 size) {
+	if(size > maxBuddySize)
+		return NULL;
+	uint8 bucket = size - minBuddySize;
+	return buddy_get(bucket);
 }
 
-void buddy_free(void *address) {
-
+void buddy_free(void *address, uint8 size) {
+	uint8 bucket = size - minBuddySize;
+	struct Buddy* block = (struct Buddy*)address;
+	buddy_put(block, size);
 }
 
 void *buddy_get(uint8 bucket) {
