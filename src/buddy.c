@@ -66,11 +66,11 @@ void *buddy_get(uint8 bucket) {
 	struct Buddy *ret = buddy[bucket];
 	if (buddy[bucket] == NULL) {
 		ret = buddy_shrink(bucket);
-		if (!ret)
-			return NULL;
+		return ret;
 	}
-	if (ret->next)
+	if (ret->next) {
 		ret->next->prev = NULL;
+	}
 	buddy[bucket] = ret->next;
 	return ret;
 }
@@ -83,11 +83,11 @@ void *buddy_shrink(uint8 bucket) {
 		return NULL;
 	struct Buddy *left = buddy_get(startBucket);
 	struct Buddy *right;
-	while (startBucket > bucket) {
+	do{
 		startBucket--;
-		right = (struct Buddy *) ((uint64) left + (1 << (startBucket + minBuddySize)));
+		right = (struct Buddy *) ((uint64)left + (1 << (startBucket + minBuddySize - 1)));
 		buddy_put(right, startBucket);
-	}
+	}while (startBucket > bucket);
 	return left;
 }
 
@@ -105,6 +105,7 @@ void buddy_put(struct Buddy *block, uint8 bucket) {
 		block->next = cur;
 		block->prev = NULL;
 		buddy[bucket] = block;
+		cur = buddy[bucket];
 	} else {
 		block->prev = cur;
 		block->next = cur->next;
@@ -120,14 +121,15 @@ void buddy_try_merge(struct Buddy *block, uint8 bucket) {
 		return;
 	uint64 addressLeft = (uint64) block - (uint64) BUDDY_START_ADDR;
 	uint64 addressRight = (uint64) block->next - (uint64) BUDDY_START_ADDR;
-	if ((addressLeft & addressRight) != 1 << bucket)
+	if (addressRight != addressLeft + (1<<(bucket - 1 + minBuddySize)))
 		return;
 	if (block == buddy[bucket]) {
 		buddy[bucket] = block->next->next;
-		block->next->next->prev = NULL;
-		return;
+		if(block->next->next)
+			block->next->next->prev = NULL;
+	} else {
+		block->prev->next = block->next->next;
 	}
-	block->prev->next = block->next->next;
 	if(block->next->next)
 		block->next->next->prev = block->prev;
 	buddy_put(block, bucket+1);
