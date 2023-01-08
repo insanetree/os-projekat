@@ -3,8 +3,24 @@
 
 #include "../lib/hw.h"
 
-typedef struct kmem_cache_s kmem_cache_t;
-#define BLOCK_SIZE (4096)
+struct slab {
+	struct slab* next;
+	void* spaceStartAddr;
+};
+
+typedef struct kmem_cache_s {
+	const char* name;
+	struct slab* empty;
+	struct slab* partrial;
+	struct slab* full;
+	uint64 slotNum;
+	uint64 slotFull;
+	size_t slotSize;
+	size_t slabSize;
+	void (*ctor)(void*);
+	void (*dtor)(void*);
+} kmem_cache_t;
+#define BLOCK_SIZE (32)
 
 void kmem_init(void *space, int block_num);
 
