@@ -98,7 +98,7 @@ void buddy_put(struct Buddy *block, uint8 bucket) {
 		buddy[bucket] = block;
 		return;
 	}
-	while (cur < block && cur->next)
+	while (cur->next && cur->next < block)
 		cur = cur->next;
 	if (block < buddy[bucket]) {
 		cur->prev = block;
