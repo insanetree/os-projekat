@@ -19,7 +19,12 @@ struct Buddy *buddy[numOfBuckets];
 /**
  * private functions
  */
-
+/**
+ * returns first power of 2 that is larger than size
+ * @param size size of elemet to allocate
+ * @return power or -1 if error
+ */
+int buddy_get_bucket(size_t size);
 /**
  * get first free block from bucket of and updates the list
  * @param size size of buddy
@@ -49,15 +54,15 @@ void buddy_init() {
 	buddy[numOfBuckets - 1] = first;
 }
 
-void *buddy_allocate(uint8 size) {
-	if(size > maxBuddySize)
+void *buddy_allocate(size_t size) {
+	int bucket = buddy_get_bucket(size);
+	if(bucket < 0)
 		return NULL;
-	uint8 bucket = size - minBuddySize;
 	return buddy_get(bucket);
 }
 
-void buddy_free(void *address, uint8 size) {
-	uint8 bucket = size - minBuddySize;
+void buddy_free(void *address, size_t size) {
+	uint8 bucket = buddy_get_bucket(size);
 	struct Buddy* block = (struct Buddy*)address;
 	buddy_put(block, bucket);
 }
@@ -133,4 +138,17 @@ void buddy_try_merge(struct Buddy *block, uint8 bucket) {
 	if(block->next->next)
 		block->next->next->prev = block->prev;
 	buddy_put(block, bucket+1);
+}
+
+static uint64 sizes[numOfBuckets] = {1<<5, 1<<6, 1<<7, 1<<8, 1<<9,
+			 1<<10, 1<<11, 1<<12, 1<<13, 1<<14,
+			 1<<15, 1<<16, 1<<17, 1<<18, 1<<19,
+			 1<<20, 1<<21, 1<<22, 1<<23, 1<<24};
+int buddy_get_bucket(size_t size) {
+	uint8 i = 0;
+	while(size > sizes[i] && i < numOfBuckets)
+		i++;
+	if(i == numOfBuckets)
+		return -1;
+	return i;
 }
