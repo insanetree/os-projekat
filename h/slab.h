@@ -5,6 +5,7 @@
 
 struct slab {
 	struct slab* next;
+	uint64 slotsBitmask;
 	void* spaceStartAddr;
 };
 
@@ -13,6 +14,7 @@ typedef struct kmem_cache_s {
 	struct slab* empty;
 	struct slab* partrial;
 	struct slab* full;
+	uint8 slotsInSlab;
 	uint64 slotNum;
 	uint64 slotFull;
 	size_t slotSize;
