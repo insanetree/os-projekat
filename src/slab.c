@@ -32,8 +32,9 @@ int kmem_cache_shrink(kmem_cache_t *cachep) {
 	while(cur) {
 		prev = cur;
 		cur = cur->next;
-		buddy_free(prev, cachep->slabSize);
-		blocksFreed += cachep->slabSize;
+		buddy_free(prev->spaceStartAddr, cachep->slotSize*cachep->slotNum);
+		buddy_free(prev, sizeof(struct slab));
+		blocksFreed += sizeof(struct slab)+cachep->slotSize*cachep->slotNum;
 	}
 	return blocksFreed / BLOCK_SIZE;
 }
@@ -49,8 +50,8 @@ int kmem_cache_shrink(kmem_cache_t *cachep) {
 void *kmem_cache_alloc(kmem_cache_t *cachep) {
 	struct slab* head;
 	if(cachep->partrial == 0 && cachep->empty == 0) {
-		head = buddy_allocate(cachep->slabSize);
-		head->spaceStartAddr = (void*)head + sizeof(struct slab);
+		head = buddy_allocate(sizeof(struct slab));
+		head->spaceStartAddr = buddy_allocate(cachep->slotNum*cachep->slotSize);
 		head->next = 0;
 		cachep->partrial = head;
 		head->slotsBitmask = 0;
@@ -80,9 +81,11 @@ void *kmem_cache_alloc(kmem_cache_t *cachep) {
 }
 
 void kmem_cache_destroy(kmem_cache_t *cachep) {
-	clear_slab_list(cachep->empty, cachep->slabSize);
-	clear_slab_list(cachep->full, cachep->slabSize);
-	clear_slab_list(cachep->partrial, cachep->slabSize);
+	size_t slabSize;
+	slabSize = cachep->slotSize * cachep->slotNum;
+	clear_slab_list(cachep->empty, slabSize);
+	clear_slab_list(cachep->full, slabSize);
+	clear_slab_list(cachep->partrial, slabSize);
 	__MA_free(cachep);
 }
 
@@ -94,6 +97,7 @@ void clear_slab_list(struct slab* list, size_t slabSize) {
 	while(cur) {
 		prev = cur;
 		cur = cur->next;
-		buddy_free(prev, slabSize);
+		buddy_free(prev->spaceStartAddr, slabSize);
+		buddy_free(prev, sizeof(struct slab));
 	}
 }

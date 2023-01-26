@@ -18,7 +18,6 @@ typedef struct kmem_cache_s {
 	uint64 slotNum;
 	uint64 slotFull;
 	size_t slotSize;
-	size_t slabSize;
 	void (*ctor)(void*);
 	void (*dtor)(void*);
 } kmem_cache_t;
