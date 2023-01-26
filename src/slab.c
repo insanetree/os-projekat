@@ -4,6 +4,18 @@
 
 void clear_slab_list(struct slab* list, size_t slabSize);
 
+/**
+ *
+ * @param objp
+ * @param cachep
+ * @param prev
+ * @param slab
+ * @return 0 - object was in partially full list, 1 - object was in full list
+ */
+int find_object(void* objp, kmem_cache_t *cachep, struct slab** prev, struct slab** slab);
+
+uint8 slotsInSlab(size_t objSize);
+
 kmem_cache_t *kmem_cache_create(const char *name, size_t objSize,
 				void (*ctor)(void *),
 				void (*dtor)(void *)) {
@@ -19,6 +31,7 @@ kmem_cache_t *kmem_cache_create(const char *name, size_t objSize,
 	cache->slotFull = 0;
 	cache->slotNum = 0;
 	cache->slotSize = objSize;
+	cache->slotsInSlab= slotsInSlab(cache->slotSize);
 	return cache;
 }
 
@@ -29,29 +42,32 @@ int kmem_cache_shrink(kmem_cache_t *cachep) {
 	int blocksFreed=0;
 	struct slab* cur = cachep->empty;
 	struct slab* prev;
+	size_t slabSize = cachep->slotSize*cachep->slotsInSlab;
 	while(cur) {
 		prev = cur;
 		cur = cur->next;
-		buddy_free(prev->spaceStartAddr, cachep->slotSize*cachep->slotNum);
+		cachep->slotNum -= cachep->slotsInSlab;
+		buddy_free(prev->spaceStartAddr,slabSize);
 		buddy_free(prev, sizeof(struct slab));
-		blocksFreed += sizeof(struct slab)+cachep->slotSize*cachep->slotNum;
+		blocksFreed += sizeof(struct slab)+slabSize;
 	}
 	return blocksFreed / BLOCK_SIZE;
 }
 
 /**
  * worry about:
-               when to go partial->full
-               increase slotFull
-               when to increase slotNum
+               when to go partial->full done
+               increase slotFull done
+               when to increase slotNum done
  * @param cachep
  * @return
  */
 void *kmem_cache_alloc(kmem_cache_t *cachep) {
 	struct slab* head;
+	size_t slabSize = cachep->slotSize*cachep->slotsInSlab;
 	if(cachep->partrial == 0 && cachep->empty == 0) {
 		head = buddy_allocate(sizeof(struct slab));
-		head->spaceStartAddr = buddy_allocate(cachep->slotNum*cachep->slotSize);
+		head->spaceStartAddr = buddy_allocate(slabSize);
 		head->next = 0;
 		cachep->partrial = head;
 		head->slotsBitmask = 0;
@@ -82,7 +98,7 @@ void *kmem_cache_alloc(kmem_cache_t *cachep) {
 
 void kmem_cache_destroy(kmem_cache_t *cachep) {
 	size_t slabSize;
-	slabSize = cachep->slotSize * cachep->slotNum;
+	slabSize = cachep->slotSize * cachep->slotsInSlab;
 	clear_slab_list(cachep->empty, slabSize);
 	clear_slab_list(cachep->full, slabSize);
 	clear_slab_list(cachep->partrial, slabSize);
@@ -100,4 +116,44 @@ void clear_slab_list(struct slab* list, size_t slabSize) {
 		buddy_free(prev->spaceStartAddr, slabSize);
 		buddy_free(prev, sizeof(struct slab));
 	}
+}
+
+uint8 slotsInSlab(size_t objSize) {
+	return 8;
+}
+
+void kmem_cache_free(kmem_cache_t *cachep, void *objp) {
+	struct slab *cur, *prev, **head;
+	int ret;
+	ret = find_object(objp, cachep, &prev, &cur);
+	*head = (ret)?(&cachep->full):(&cachep->partrial);
+}
+
+int find_object(void* objp, kmem_cache_t* cachep, struct slab** previous, struct slab** slabWhereFound) {
+	struct slab *cur, *prev;
+	size_t slabSize;
+	slabSize=cachep->slotsInSlab*cachep->slotSize;
+	prev=0;
+	cur=cachep->partrial;
+	while(cur){
+		if(objp >= cur->spaceStartAddr && objp < cur->spaceStartAddr+slabSize) {
+			*previous = prev;
+			*slabWhereFound = cur;
+			return 0;
+		}
+		prev = cur;
+		cur = cur->next;
+	}
+	prev=0;
+	cur=cachep->full;
+	while(cur) {
+		if(objp >= cur->spaceStartAddr && objp < cur->spaceStartAddr+slabSize) {
+			*previous = prev;
+			*slabWhereFound = cur;
+			return 1;
+		}
+		prev = cur;
+		cur = cur->next;
+	}
+	return -1;
 }
