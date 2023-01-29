@@ -122,11 +122,33 @@ uint8 slotsInSlab(size_t objSize) {
 	return 8;
 }
 
+/**
+ * worry about
+ * full->partial
+ * partial->empty
+ * slotFull--
+ * @param cachep
+ * @param objp
+ */
 void kmem_cache_free(kmem_cache_t *cachep, void *objp) {
-	struct slab *cur, *prev, **head;
+	struct slab *cur, *prev, **headTo, **headFrom;
 	int ret;
+	uint64 slotIndex;
 	ret = find_object(objp, cachep, &prev, &cur);
-	*head = (ret)?(&cachep->full):(&cachep->partrial);
+	headFrom = (ret) ? (&(cachep->full)) : (&(cachep->partrial));
+	headTo = (ret) ? (&(cachep->partrial)) : (&(cachep->empty));
+	cachep->slotFull--;
+	slotIndex = (uint64)objp - (uint64)cur->spaceStartAddr;
+	slotIndex /= cachep->slotSize;
+	cur->slotsBitmask &= ~(1<<slotIndex);
+	if(cachep->dtor)
+		cachep->dtor(objp);
+	if(ret || cur->slotsBitmask == 0) {
+		if(prev) prev->next = cur->next;
+		else *headFrom = cur->next;
+		cur->next = *headTo;
+		*headTo = cur;
+	}
 }
 
 int find_object(void* objp, kmem_cache_t* cachep, struct slab** previous, struct slab** slabWhereFound) {
