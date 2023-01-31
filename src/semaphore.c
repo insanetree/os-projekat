@@ -1,9 +1,10 @@
 #include "../h/semaphore.h"
 #include "../h/MemoryAllocator.h"
+#include "../h/cache.h"
 
 struct __semaphore* __sem_init(uint64 init) {
 	struct __semaphore* newSem;
-	newSem = __MA_allocate(sizeof(struct __semaphore));
+	newSem = kmem_cache_alloc(semaphore_cache);
 	if(newSem == NULL)
 		return NULL;
 	newSem->value = init;
@@ -39,7 +40,7 @@ void __sem_close(struct __semaphore* sem) {
 	while(sem->head != NULL) {
 		__pop_sem(sem, IRREGULAR_POST);
 	}
-	__MA_free(sem);
+	kmem_cache_free(semaphore_cache,sem);
 }
 
 int __sem_wait(struct __semaphore* sem) {
