@@ -2,7 +2,9 @@
 #define OS1_PROJEKAT_SLAB_H
 
 #include "../lib/hw.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 struct slab {
 	struct slab* next;
 	uint64 slotsBitmask;
@@ -36,4 +38,8 @@ void kfree(const void *objp); // Deallocate one small memory buffer
 void kmem_cache_destroy(kmem_cache_t *cachep); // Deallocate cache DONE
 void kmem_cache_info(kmem_cache_t *cachep); // Print cache info
 int kmem_cache_error(kmem_cache_t *cachep); // Print error message
+#ifdef __cplusplus
+}
+#endif
+
 #endif //OS1_PROJEKAT_SLAB_H

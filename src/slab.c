@@ -140,7 +140,7 @@ void kmem_cache_free(kmem_cache_t *cachep, void *objp) {
 	cachep->slotFull--;
 	slotIndex = (uint64)objp - (uint64)cur->spaceStartAddr;
 	slotIndex /= cachep->slotSize;
-	cur->slotsBitmask &= ~(1<<slotIndex);
+	cur->slotsBitmask &= ~(1UL<<slotIndex);
 	if(cachep->dtor)
 		cachep->dtor(objp);
 	if(ret || cur->slotsBitmask == 0) {
