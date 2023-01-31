@@ -8,6 +8,7 @@
 #include "../lib/console.h"
 #include "../h/slab.h"
 #include "../h/cache.h"
+#include "../h/buddy.h"
 
 kmem_cache_t* tcb_cache;
 const char* tcb_cache_name = "TCB Cache";
@@ -27,6 +28,7 @@ uint64 __align(uint64 what, uint64 to) {
 inline void __init_system() {
 	//memory initialization
 	__MA_memory_init();
+	buddy_init();
 	tcb_cache = kmem_cache_create(tcb_cache_name, sizeof(struct __tcb), NULL, NULL);
 	stack_cache = kmem_cache_create(stack_cache_name, DEFAULT_STACK_SIZE, NULL, NULL);
 	semaphore_cache = kmem_cache_create(semaphore_cache_name, sizeof(struct __semaphore), NULL, NULL);
