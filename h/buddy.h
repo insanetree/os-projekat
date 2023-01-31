@@ -10,8 +10,8 @@ extern void* BUDDY_START_ADDR;
 extern void* BUDDY_END_ADDR;
 
 void buddy_init();
-void* buddy_allocate(uint8 size);
-void buddy_free(void* address, uint8 size);
+void* buddy_allocate(size_t size);
+void buddy_free(void* address, size_t size);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,7 @@
 #include "../h/tcb.h"
 #include "../h/MemoryAllocator.h"
 #include "../h/syscall_c.h"
+#include "../h/cache.h"
 
 struct __tcb* exited = NULL;
 
@@ -20,7 +21,7 @@ void __thread_wrapper() {
 }
 
 struct __tcb* __thread_create(Body body, void* arg) {
-	struct __tcb* newThread = __MA_allocate(sizeof(struct __tcb));
+	struct __tcb* newThread = kmem_cache_alloc(tcb_cache);
 
 	if(!newThread) return NULL;
 
@@ -28,9 +29,9 @@ struct __tcb* __thread_create(Body body, void* arg) {
 		newThread->stack = NULL;
 		newThread->sp = 0;
 	} else {
-		newThread->stack = __MA_allocate(DEFAULT_STACK_SIZE);
+		newThread->stack = kmem_cache_alloc(stack_cache);
 		if(newThread->stack == NULL) {
-			__MA_free(newThread);
+			kmem_cache_free(tcb_cache, newThread);
 			return NULL;
 		}
 		newThread->sp = (uint64)(newThread->stack + DEFAULT_STACK_SIZE);
@@ -72,8 +73,8 @@ void __clear_exit_stack() {
 	while(cur != NULL) {
 		prev = cur;
 		cur = cur->next;
-		__MA_free(prev->stack);
-		__MA_free(prev);
+		kmem_cache_free(stack_cache,prev->stack);
+		kmem_cache_free(tcb_cache, prev);
 	}
 	exited = NULL;
 }
