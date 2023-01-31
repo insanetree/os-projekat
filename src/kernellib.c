@@ -3,8 +3,18 @@
 #include "../h/syscall_handlers.h"
 #include "../h/scheduler.h"
 #include "../h/tcb.h"
+#include "../h/semaphore.h"
 #include "../h/sleeper.h"
 #include "../lib/console.h"
+#include "../h/slab.h"
+#include "../h/cache.h"
+
+kmem_cache_t* tcb_cache;
+const char* tcb_cache_name = "TCB Cache";
+kmem_cache_t* stack_cache;
+const char* stack_cache_name = "Stack Cache";
+kmem_cache_t* semaphore_cache;
+const char* semaphore_cache_name = "Semaphore Cache";
 
 void __handle_syscall();
 void __interrupt();
@@ -17,7 +27,9 @@ uint64 __align(uint64 what, uint64 to) {
 inline void __init_system() {
 	//memory initialization
 	__MA_memory_init();
-
+	tcb_cache = kmem_cache_create(tcb_cache_name, sizeof(struct __tcb), NULL, NULL);
+	stack_cache = kmem_cache_create(stack_cache_name, DEFAULT_STACK_SIZE, NULL, NULL);
+	semaphore_cache = kmem_cache_create(semaphore_cache_name, sizeof(struct __semaphore), NULL, NULL);
 	__init_scheduler();
 
 	//__init_console();
