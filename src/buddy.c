@@ -90,7 +90,7 @@ void *buddy_shrink(uint8 bucket) {
 	struct Buddy *right;
 	do{
 		startBucket--;
-		right = (struct Buddy *) ((uint64)left + (1 << (startBucket + minBuddySize - 1)));
+		right = (struct Buddy *) ((uint64)left + (1 << (startBucket + minBuddySize)));
 		buddy_put(right, startBucket);
 	}while (startBucket > bucket);
 	return left;
