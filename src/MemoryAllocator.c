@@ -5,6 +5,7 @@ void* RESERVED_END_ADDR;
 void* FREE_SPACE_START;
 void* BUDDY_START_ADDR;
 void* BUDDY_END_ADDR;
+uint64 FREE_SPACE_SIZE;
 
 struct __MA_memory_block {
 	size_t size;
@@ -42,7 +43,7 @@ void __MA_try_to_join(struct __MA_memory_block* b, struct __MA_memory_block* a);
 
 void __MA_reserve_space() {
 	BUDDY_START_ADDR = (void*)HEAP_START_ADDR;
-	BUDDY_END_ADDR = (void*)(BUDDY_START_ADDR + 0x800000); //16MiB for buddy
+	BUDDY_END_ADDR = (void*)((uint64)BUDDY_START_ADDR + (1<<24)); //16MiB for buddy
 	uint64 all_bytes = HEAP_END_ADDR - BUDDY_END_ADDR;
 	uint64 res_bytes;
 	uint64 div = CRUMBS*MEM_BLOCK_SIZE + 1;
@@ -68,6 +69,7 @@ void __MA_memory_init() {
 	block_size = ((uint64)HEAP_END_ADDR - (uint64)FREE_SPACE_START);
 	start->size = block_size;
 	start->next = NULL;
+	FREE_SPACE_SIZE=start->size;
 }
 
 
@@ -104,7 +106,7 @@ void* __MA_allocate(size_t size) {
 		tmp->size = bstft->size - reqspc;
 		bstft->next = tmp;
 	}
-
+	FREE_SPACE_SIZE-=reqspc;
 	if(bstft == FREE_SPACE_START) {
 		FREE_SPACE_START = bstft->next;
 	}else {
@@ -186,6 +188,7 @@ uint64 __MA_get_free_size(void* ptr) {
 int __MA_free(void* ptr){
 	if(ptr == NULL) return -0x02;
 	size_t freeSize = __MA_get_free_size(ptr);
+	FREE_SPACE_SIZE+=freeSize;
 	struct __MA_memory_block* newBlock = (struct __MA_memory_block*)ptr;
 	newBlock->size = freeSize;
 	newBlock->next = NULL;

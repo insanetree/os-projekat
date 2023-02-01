@@ -67,7 +67,11 @@ void *kmem_cache_alloc(kmem_cache_t *cachep) {
 	size_t slabSize = cachep->slotSize*cachep->slotsInSlab;
 	if(cachep->partrial == 0 && cachep->empty == 0) {
 		head = buddy_allocate(sizeof(struct slab));
+		if(!head)
+			return 0;
 		head->spaceStartAddr = buddy_allocate(slabSize);
+		if(!head->spaceStartAddr)
+			return 0;
 		head->next = 0;
 		cachep->partrial = head;
 		head->slotsBitmask = 0;
