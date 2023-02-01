@@ -43,8 +43,6 @@ struct __tcb* __thread_create(Body body, void* arg) {
 	newThread->time = 0;
 	newThread->state = READY;
 
-	//__scheduler_push(newThread);
-
 	return newThread;
 }
 

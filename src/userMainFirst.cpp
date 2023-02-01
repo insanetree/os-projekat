@@ -10,48 +10,48 @@ class ForkThread : public Thread {
 public:
     ForkThread(long _id) noexcept : Thread(), id(_id), finished(false) {}
     virtual void run() {
-        printstr("Started thread id: "), printunum(id), printstr("\n");
+	printstr("Started thread id: "), printunum(id), printstr("\n");
 
 
-        ForkThread* thread = new ForkThread(id + 1);
-        ForkThread** threads = (ForkThread** ) mem_alloc(sizeof(ForkThread*) * id);
+	ForkThread* thread = new ForkThread(id + 1);
+	ForkThread** threads = (ForkThread** ) mem_alloc(sizeof(ForkThread*) * id);
 
-        if (threads != nullptr) {
-            for (long i = 0; i < id; i++) {
-                threads[i] = new ForkThread(id);
-            }
+	if (threads != nullptr) {
+	    for (long i = 0; i < id; i++) {
+		threads[i] = new ForkThread(id);
+	    }
 
-            if (thread != nullptr) {
-                if (thread->start() == 0) {
+	    if (thread != nullptr) {
+		if (thread->start() == 0) {
 
-                for (int i = 0; i < 5000; i++) {
-                    for (int j = 0; j < 5000; j++) {
+		for (int i = 0; i < 5000; i++) {
+		    for (int j = 0; j < 5000; j++) {
 
-                    }
-                    thread_dispatch();
-                }
+		    }
+		    thread_dispatch();
+		}
 
-                    while (!thread->isFinished()) {
-                        thread_dispatch();
-                    }
-                }
-                delete thread;
-            }
+		    while (!thread->isFinished()) {
+			thread_dispatch();
+		    }
+		}
+		delete thread;
+	    }
 
-            for (long i = 0; i < id; i++) {
-                delete threads[i];
-            }
+	    for (long i = 0; i < id; i++) {
+		delete threads[i];
+	    }
 
-            mem_free(threads);
-        }
+	    mem_free(threads);
+	}
 
-        printstr("Finished thread id "), printunum(id), printstr("\n");
+	printstr("Finished thread id "), printunum(id), printstr("\n");
 
-        finished = true;
+	finished = true;
     }
 
     bool isFinished() const {
-        return finished;
+	return finished;
     }
 
 private:
@@ -66,7 +66,7 @@ void userMainFirst() {
     thread.start();
 
     while (!thread.isFinished()) {
-        thread_dispatch();
+	thread_dispatch();
     }
 
     printstr("User main finished\n");
