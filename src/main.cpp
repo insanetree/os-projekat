@@ -6,9 +6,10 @@
 #include "sleeper.h"
 
 void userMainFirst();
+void userMainSecond();
 int main() {
 	__init_system();
-	userMainFirst();
+	userMainSecond();
 
 	return 0;
 }

@@ -2,6 +2,7 @@
 #define OS1_PROJEKAT_SLAB_H
 
 #include "../lib/hw.h"
+#include "kernellib.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
