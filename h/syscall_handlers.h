@@ -13,6 +13,7 @@ void __mem_alloc_handler();
 void __mem_free_handler();
 void __thread_exit_handler();
 void __thread_create_handler();
+void __thread_start_handler();
 void __sem_open_handler();
 void __sem_close_handler();
 void __sem_wait_handler();

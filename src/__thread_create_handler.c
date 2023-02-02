@@ -15,7 +15,6 @@ void __thread_create_handler() {
 
 	if(*handle) {
 		ret = 0;
-		__scheduler_push(*handle);
 	} else {
 		ret = -0x11;
 	}

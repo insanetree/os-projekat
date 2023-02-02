@@ -10,7 +10,6 @@ void operator delete(void* ptr) {
 
 void threadWrapper(void* arg) {
 	Thread* thread = (Thread*)arg;
-	sem_wait(thread->startThread);
 	if(thread->body == nullptr)
 		thread->run();
 	else
@@ -18,17 +17,15 @@ void threadWrapper(void* arg) {
 }
 
 Thread::Thread(void (* body)(void*), void* arg) : argument(arg), body(body) {
-	sem_open(&startThread, 0);
 	thread_create(&myHandle, threadWrapper, (void*)this);
 }
 
 Thread::Thread() {
-	sem_open(&startThread, 0);
 	thread_create(&myHandle, threadWrapper, (void*)this);
 }
 
 int Thread::start() {
-	return sem_signal(startThread);
+	return thread_start(myHandle);
 }
 
 Thread::~Thread() {

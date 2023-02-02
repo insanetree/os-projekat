@@ -15,7 +15,8 @@ enum thread_state {
 	FINISHED,
 	READY,
 	BLOCKED,
-	IRREGULAR_POST
+	IRREGULAR_POST,
+	CREATED
 };
 
 struct __tcb {

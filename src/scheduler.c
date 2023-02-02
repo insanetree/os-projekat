@@ -17,6 +17,7 @@ void __init_scheduler() {
 
 void __scheduler_push(struct __tcb* newThread) {
 	newThread->next = NULL;
+	newThread->state = READY;
 	if(!tail) {
 		tail = newThread;
 		head = newThread;

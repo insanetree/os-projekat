@@ -28,6 +28,7 @@ struct __tcb* __thread_create(Body body, void* arg) {
 	if(!body) {
 		newThread->stack = NULL;
 		newThread->sp = 0;
+		newThread->state = READY;
 	} else {
 		newThread->stack = kmem_cache_alloc(stack_cache);
 		if(newThread->stack == NULL) {
@@ -35,14 +36,14 @@ struct __tcb* __thread_create(Body body, void* arg) {
 			return NULL;
 		}
 		newThread->sp = (uint64)(newThread->stack + DEFAULT_STACK_SIZE);
+		newThread->state = CREATED;
 	}
 
 	newThread->arg = arg;
 	newThread->body = body;
 	newThread->ra = (uint64) &__thread_wrapper;
 	newThread->time = 0;
-	newThread->state = READY;
-
+	newThread->next = NULL;
 	return newThread;
 }
 
