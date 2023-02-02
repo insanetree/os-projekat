@@ -16,11 +16,13 @@ void printunum(uint64 num){
 	static const int decplc = 20;
 	int i;
 	char str[decplc];
+	char* p = str;
 	str[decplc-1] = '\0';
 	for(i = decplc-2 ; i >= 0 ; i--)
 	{
 		str[i] = '0' + num % 10;
 		num /= 10;
 	}
-	printstr(str);
+	while(*p == '0'&&p!=&str[decplc-2])p++;
+	printstr(p);
 }
