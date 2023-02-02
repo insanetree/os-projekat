@@ -4,7 +4,7 @@ void __thread_start_handler() {
 	int ret;
 	struct __tcb* handle;
 	__asm__ volatile("mv %0, a1":"=r"(handle));
-	if(handle->state == CREATED) {
+	if(handle && handle->state == CREATED) {
 		ret = 0;
 		__scheduler_push(handle);
 	}
