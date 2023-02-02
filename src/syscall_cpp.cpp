@@ -29,7 +29,6 @@ int Thread::start() {
 }
 
 Thread::~Thread() {
-	sem_close(startThread);
 }
 
 void Thread::dispatch() {
