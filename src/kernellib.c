@@ -16,6 +16,11 @@ kmem_cache_t* stack_cache;
 const char* stack_cache_name = "Stack Cache";
 kmem_cache_t* semaphore_cache;
 const char* semaphore_cache_name = "Semaphore Cache";
+kmem_cache_t* buffer_cache[13]={NULL};
+const char* buffer_cache_name[13] = {"size5", "size6", "size7", "size8",
+				     "size9", "size10", "size11", "size12",
+				     "size13", "size14", "size15", "size16",
+				     "size17"};
 
 void __handle_syscall();
 void __interrupt();
@@ -32,6 +37,10 @@ inline void __init_system() {
 	tcb_cache = kmem_cache_create(tcb_cache_name, sizeof(struct __tcb), NULL, NULL);
 	stack_cache = kmem_cache_create(stack_cache_name, DEFAULT_STACK_SIZE, NULL, NULL);
 	semaphore_cache = kmem_cache_create(semaphore_cache_name, sizeof(struct __semaphore), NULL, NULL);
+	for(int i = 0 ; i < 13 ; i++) {
+		buffer_cache[i] = kmem_cache_create(buffer_cache_name[i], 1<<(i+5), NULL, NULL);
+		buffer_cache[i]->slotsInSlab=4;
+	}
 	__init_scheduler();
 
 	//__init_console();

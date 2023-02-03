@@ -1,6 +1,8 @@
 #include "../h/slab.h"
+#include "../h/cache.h"
 #include "../h/buddy.h"
 #include "../h/MemoryAllocator.h"
+#include "../h/print.h"
 
 void clear_slab_list(struct slab* list, size_t slabSize);
 
@@ -139,6 +141,8 @@ void kmem_cache_free(kmem_cache_t *cachep, void *objp) {
 	int ret;
 	uint64 slotIndex;
 	ret = find_object(objp, cachep, &prev, &cur);
+	if(ret < 0)
+		return;
 	headFrom = (ret) ? (&(cachep->full)) : (&(cachep->partrial));
 	headTo = (ret) ? (&(cachep->partrial)) : (&(cachep->empty));
 	cachep->slotFull--;
@@ -182,4 +186,25 @@ int find_object(void* objp, kmem_cache_t* cachep, struct slab** previous, struct
 		cur = cur->next;
 	}
 	return -1;
+}
+
+void* kmalloc(size_t size) {
+	int bucket = buddy_get_bucket(size);
+	return kmem_cache_alloc(buffer_cache[bucket]);
+}
+
+void kmfree(const void* objp) {
+	for(int i = 0 ; i < 13 ; i++)
+		kmem_cache_free(buffer_cache[i], (void*)objp);
+}
+
+void kmem_cache_info(kmem_cache_t* cachep) {
+	printstr(cachep->name);
+	printstr(" ");
+	printunum(cachep->slotSize);
+	printstr(" ");
+	printunum(cachep->slotNum / cachep->slotsInSlab);
+	printstr(" ");
+	printunum(cachep->slotFull * 100 / cachep->slotNum);
+	printstr("%\n");
 }
