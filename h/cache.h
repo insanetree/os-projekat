@@ -9,6 +9,7 @@ extern "C" {
 	extern kmem_cache_t* tcb_cache;
 	extern kmem_cache_t* stack_cache;
 	extern kmem_cache_t* semaphore_cache;
+	extern kmem_cache_t* buffer_cache[13];
 #ifdef __cplusplus
 }
 #endif

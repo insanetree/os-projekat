@@ -12,6 +12,7 @@ extern void* BUDDY_END_ADDR;
 void buddy_init();
 void* buddy_allocate(size_t size);
 void buddy_free(void* address, size_t size);
+int buddy_get_bucket(size_t size);
 
 #ifdef __cplusplus
 }
