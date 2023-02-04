@@ -4,6 +4,10 @@
 #include "../h/MemoryAllocator.h"
 #include "../h/print.h"
 
+
+const char* noSpaceError = "No available space for slab allocation";
+const char* objectNotInCache = "Object ould not be deallocated because it is not in selected cache";
+
 void clear_slab_list(struct slab* list, size_t slabSize);
 
 /**
@@ -34,6 +38,7 @@ kmem_cache_t *kmem_cache_create(const char *name, size_t objSize,
 	cache->slotNum = 0;
 	cache->slotSize = objSize;
 	cache->slotsInSlab= slotsInSlab(cache->slotSize);
+	cache->errorMessage=NULL;
 	return cache;
 }
 
@@ -70,11 +75,16 @@ void *kmem_cache_alloc(kmem_cache_t *cachep) {
 	size_t slabSize = cachep->slotSize*cachep->slotsInSlab;
 	if(cachep->partrial == 0 && cachep->empty == 0) {
 		head = buddy_allocate(sizeof(struct slab));
-		if(!head)
-			return 0;
+		if(!head) {
+			cachep->errorMessage = noSpaceError;
+			return NULL;
+		}
+
 		head->spaceStartAddr = buddy_allocate(slabSize);
-		if(!head->spaceStartAddr)
-			return 0;
+		if(!head->spaceStartAddr) {
+			cachep->errorMessage = noSpaceError;
+			return NULL;
+		}
 		head->next = NULL;
 		cachep->partrial = head;
 		head->slotsBitmask = 0;
@@ -143,8 +153,10 @@ void kmem_cache_free(kmem_cache_t *cachep, void *objp) {
 	int ret;
 	uint64 slotIndex;
 	ret = find_object(objp, cachep, &prev, &cur);
-	if(ret < 0)
+	if(ret < 0){
+		cachep->errorMessage=objectNotInCache;
 		return;
+	}
 	headFrom = (ret) ? (&(cachep->full)) : (&(cachep->partrial));
 	headTo = (ret) ? (&(cachep->partrial)) : (&(cachep->empty));
 	cachep->slotFull--;
@@ -196,17 +208,36 @@ void* kmalloc(size_t size) {
 }
 
 void kmfree(const void* objp) {
-	for(int i = 0 ; i < 13 ; i++)
-		kmem_cache_free(buffer_cache[i], (void*)objp);
+	const char* ermsg;
+	for(int i = 0 ; i < 13 ; i++) {
+		ermsg = buffer_cache[i]->errorMessage;
+		kmem_cache_free(buffer_cache[i], (void *) objp);
+		buffer_cache[i]->errorMessage = ermsg;
+	}
 }
 
 void kmem_cache_info(kmem_cache_t* cachep) {
+	uint64 spaceAllocated = 0;
+	uint64 numOfSlabs;
+	numOfSlabs = cachep->slotNum/cachep->slotsInSlab;
+	spaceAllocated += 1<<(buddy_get_bucket(sizeof(kmem_cache_t))+5);
+	spaceAllocated += numOfSlabs*((1<<(buddy_get_bucket(sizeof(struct slab))+5))
+		+ (1<<(buddy_get_bucket(cachep->slotsInSlab*cachep->slotSize))));
 	printstr(cachep->name);
-	printstr(" ");
+	printstr(" object size:");
 	printunum(cachep->slotSize);
-	printstr(" ");
-	printunum(cachep->slotNum / cachep->slotsInSlab);
-	printstr(" ");
+	printstr(" blocks allocated:");
+	printunum(spaceAllocated/BLOCK_SIZE);
+	printstr(" number of slabs:");
+	printunum(numOfSlabs);
+	printstr(" space used:");
 	printunum(cachep->slotFull * 100 / cachep->slotNum);
 	printstr("%\n");
+}
+
+int kmem_cache_error(kmem_cache_t* cachep) {
+	if(!cachep->errorMessage)
+		return 0;
+	printstr(cachep->errorMessage);
+	return 132;
 }
