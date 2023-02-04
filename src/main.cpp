@@ -9,7 +9,7 @@ void userMainFirst();
 void userMainSecond();
 int main() {
 	__init_system();
-	userMainSecond();
+	userMainFirst();
 
 	return 0;
 }

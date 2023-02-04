@@ -10,6 +10,8 @@ void operator delete(void* ptr) {
 
 void threadWrapper(void* arg) {
 	Thread* thread = (Thread*)arg;
+	if(!thread->started)
+		return;
 	if(thread->body == nullptr)
 		thread->run();
 	else
@@ -25,10 +27,13 @@ Thread::Thread() {
 }
 
 int Thread::start() {
+	started=true;
 	return thread_start(myHandle);
 }
 
 Thread::~Thread() {
+	if(!started)
+		start();
 }
 
 void Thread::dispatch() {

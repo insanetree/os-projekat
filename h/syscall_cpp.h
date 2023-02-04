@@ -27,6 +27,7 @@ protected:
 	friend void threadWrapper(void*);
 
 private:
+	bool started = false;
 	thread_t myHandle;
 	void* argument = nullptr;
 	void (* body)(void*) = nullptr;
