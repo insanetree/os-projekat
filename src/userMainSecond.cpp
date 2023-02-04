@@ -19,9 +19,9 @@ const char *const CACHE_NAMES[] = {"tc_0",
 				   "tc_3",
 				   "tc_4"};
 
-void memset(const void *data, int size, int value) {
+void memset(const void *data, int size, char value) {
 	for (int j = 0; j < size; j++) {
-		*(char *) data = value;
+		*((char *) data+j) = value;
 	}
 }
 

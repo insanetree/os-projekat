@@ -75,13 +75,14 @@ void *kmem_cache_alloc(kmem_cache_t *cachep) {
 		head->spaceStartAddr = buddy_allocate(slabSize);
 		if(!head->spaceStartAddr)
 			return 0;
-		head->next = 0;
+		head->next = NULL;
 		cachep->partrial = head;
 		head->slotsBitmask = 0;
 		cachep->slotNum += cachep->slotsInSlab;
 	} else if(cachep->partrial == 0 && cachep->empty != 0) {
 		head = cachep->empty;
 		cachep->empty = cachep->empty->next;
+		head->next = NULL;
 		cachep->partrial = head;
 	} else {
 		head = cachep->partrial;
