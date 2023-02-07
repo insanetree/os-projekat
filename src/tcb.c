@@ -36,7 +36,7 @@ struct __tcb* __thread_create(Body body, void* arg) {
 			return NULL;
 		}
 		newThread->sp = (uint64)(newThread->stack + DEFAULT_STACK_SIZE);
-		newThread->state = CREATED;
+		newThread->state = READY;
 	}
 
 	newThread->arg = arg;

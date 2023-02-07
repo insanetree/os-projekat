@@ -18,6 +18,6 @@ void __thread_create_handler() {
 	} else {
 		ret = -0x11;
 	}
-
+	__scheduler_push(*handle);
 	__asm__ volatile("mv a0, %0"::"r"(ret));
 }

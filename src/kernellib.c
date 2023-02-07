@@ -118,9 +118,6 @@ void __handle_syscall() {
 		case 0x13:
 			__thread_dispatch();
 			break;
-		case 0x14:
-			__thread_start_handler();
-			break;
 		case 0x21:
 			__sem_open_handler();
 			break;
