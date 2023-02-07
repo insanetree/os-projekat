@@ -21,11 +21,33 @@ void clear_slab_list(struct slab* list, size_t slabSize);
 int find_object(void* objp, kmem_cache_t *cachep, struct slab** prev, struct slab** slab);
 
 uint8 slotsInSlab(size_t objSize);
+void* BUDDY_START_ADDR;
+void* BUDDY_END_ADDR;
+uint64 minBuddySize;
+uint64 numOfBuckets;
+void kmem_init(void *space, int block_num) {
+	BUDDY_START_ADDR=space;
+	BUDDY_END_ADDR=BUDDY_START_ADDR+block_num*BLOCK_SIZE;
+	uint64 tmp = BLOCK_SIZE;
+	minBuddySize = 0;
+	while(tmp%2 == 0) {
+		minBuddySize++;
+		tmp/=2;
+	}
+	numOfBuckets=1;
+	while (block_num%2 == 0){
+		numOfBuckets++;
+		block_num/=2;
+	}
+
+	buddy_init();
+}
+
 
 kmem_cache_t *kmem_cache_create(const char *name, size_t objSize,
 				void (*ctor)(void *),
 				void (*dtor)(void *)) {
-	kmem_cache_t* cache = __MA_allocate(sizeof(kmem_cache_t));
+	kmem_cache_t* cache = buddy_allocate(sizeof(kmem_cache_t));
 	if(cache == 0)
 		return 0;
 	cache->name = name;
@@ -120,7 +142,7 @@ void kmem_cache_destroy(kmem_cache_t *cachep) {
 	clear_slab_list(cachep->empty, slabSize);
 	clear_slab_list(cachep->full, slabSize);
 	clear_slab_list(cachep->partrial, slabSize);
-	__MA_free(cachep);
+	buddy_free(cachep, sizeof(kmem_cache_t));
 }
 
 void clear_slab_list(struct slab* list, size_t slabSize) {
@@ -220,8 +242,8 @@ void kmem_cache_info(kmem_cache_t* cachep) {
 	uint64 spaceAllocated = 0;
 	uint64 numOfSlabs;
 	numOfSlabs = cachep->slotNum/cachep->slotsInSlab;
-	spaceAllocated += 1<<(buddy_get_bucket(sizeof(kmem_cache_t))+5);
-	spaceAllocated += numOfSlabs*((1<<(buddy_get_bucket(sizeof(struct slab))+5))
+	spaceAllocated += 1<<(buddy_get_bucket(sizeof(kmem_cache_t))+minBuddySize);
+	spaceAllocated += numOfSlabs*((1<<(buddy_get_bucket(sizeof(struct slab))+minBuddySize))
 		+ (1<<(buddy_get_bucket(cachep->slotsInSlab*cachep->slotSize))));
 	printstr(cachep->name);
 	printstr(" object size:");
