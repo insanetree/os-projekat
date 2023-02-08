@@ -4,6 +4,8 @@
 #include "../h/MemoryAllocator.h"
 #include "../h/print.h"
 
+kmem_cache_t* cache_head=NULL;
+kmem_cache_t* cache_tail=NULL;
 
 const char* noSpaceError = "No available space for slab allocation";
 const char* objectNotInCache = "Object ould not be deallocated because it is not in selected cache";
@@ -25,9 +27,12 @@ void* BUDDY_START_ADDR;
 void* BUDDY_END_ADDR;
 uint64 minBuddySize;
 uint64 numOfBuckets;
+uint64 buddyBlockNum;
+uint64 buddyBlockFree;
 void kmem_init(void *space, int block_num) {
 	BUDDY_START_ADDR=space;
 	BUDDY_END_ADDR=BUDDY_START_ADDR+block_num*BLOCK_SIZE;
+	buddyBlockNum = buddyBlockFree = block_num;
 	uint64 tmp = BLOCK_SIZE;
 	minBuddySize = 0;
 	while(tmp%2 == 0) {
@@ -61,6 +66,15 @@ kmem_cache_t *kmem_cache_create(const char *name, size_t objSize,
 	cache->slotSize = objSize;
 	cache->slotsInSlab= slotsInSlab(cache->slotSize);
 	cache->errorMessage=NULL;
+	if(!cache_head) {
+		cache_head=cache_tail = cache;
+		cache->next=cache->prev = NULL;
+	} else {
+		cache->prev = cache_tail;
+		cache->next = NULL;
+		cache_tail->next = cache;
+		cache_tail = cache;
+	}
 	return cache;
 }
 
@@ -142,6 +156,9 @@ void kmem_cache_destroy(kmem_cache_t *cachep) {
 	clear_slab_list(cachep->empty, slabSize);
 	clear_slab_list(cachep->full, slabSize);
 	clear_slab_list(cachep->partrial, slabSize);
+	if(cachep->next) cachep->next->prev = cachep->prev;
+	if(cachep->prev) cachep->prev->next = cachep->next;
+	if(cachep==cache_tail) cache_tail = cachep->prev;
 	buddy_free(cachep, sizeof(kmem_cache_t));
 }
 
@@ -262,4 +279,18 @@ int kmem_cache_error(kmem_cache_t* cachep) {
 		return 0;
 	printstr(cachep->errorMessage);
 	return 132;
+}
+
+void shrink_caches() {
+	if(100 * buddyBlockFree / buddyBlockNum > 60)
+		return;
+	kmem_cache_t* cur;
+	uint64 threshold, percentFull;
+	for(cur=cache_head ; cur ; cur=cur->next) {
+		if(cur->slotNum == 0) continue;
+		threshold = 1000 / cur->slotsInSlab;
+		percentFull = 1000 * cur->slotFull / cur->slotNum;
+		if(percentFull >= threshold) continue;
+		kmem_cache_shrink(cur);
+	}
 }

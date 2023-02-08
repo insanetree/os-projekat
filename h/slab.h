@@ -24,6 +24,8 @@ typedef struct kmem_cache_s {
 	const char* errorMessage;
 	void (*ctor)(void*);
 	void (*dtor)(void*);
+	struct kmem_cache_s* next;
+	struct kmem_cache_s* prev;
 } kmem_cache_t;
 #define BLOCK_SIZE (32)
 

@@ -56,7 +56,7 @@ inline void __init_system() {
 	//enable interrupt ALWAYS AT THE END
 	__asm__ volatile("csrs sstatus, 0x02");
 }
-
+void shrink_caches();
 void __interrupt_handler() {
 	uint64 a0, a1, a2, a3, sstatus;
 	__asm__ volatile("mv %0, a0":"=r"(a0));
@@ -98,6 +98,7 @@ void __interrupt_handler() {
 	__asm__ volatile("csrci sip, 0x02");
 	__asm__ volatile("csrw sepc, %0"::"r"(sepc));
 	__asm__ volatile("csrw sstatus, %0"::"r"(sstatus));
+	shrink_caches();
 }
 
 void __handle_syscall() {

@@ -13,7 +13,8 @@ struct Buddy {
 #define maxBuddySize 24
 extern uint64 minBuddySize;
 extern uint64 numOfBuckets;
-
+extern uint64 buddyBlockNum;
+extern uint64 buddyBlockFree;
 struct Buddy *buddy[64];
 
 /**
@@ -58,12 +59,15 @@ void *buddy_allocate(size_t size) {
 	int bucket = buddy_get_bucket(size);
 	if(bucket < 0)
 		return NULL;
-	return buddy_get(bucket);
+	void* ret = buddy_get(bucket);
+	if(ret) buddyBlockFree -= 1<<bucket;
+	return ret;
 }
 
 void buddy_free(void *address, size_t size) {
 	uint8 bucket = buddy_get_bucket(size);
 	struct Buddy* block = (struct Buddy*)address;
+	buddyBlockFree += 1<<bucket;
 	buddy_put(block, bucket);
 }
 
