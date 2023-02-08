@@ -176,7 +176,15 @@ void clear_slab_list(struct slab* list, size_t slabSize) {
 }
 
 uint8 slotsInSlab(size_t objSize) {
-	return 8;
+	uint8 numOld=0, numNew = 8;
+	int bucketOld, bucketNew;
+	do {
+		numOld = numNew;
+		bucketOld = buddy_get_bucket(objSize * numOld);
+		numNew++;
+		bucketNew = buddy_get_bucket(objSize * numNew);
+	} while(bucketNew == bucketOld && bucketOld > 0);
+	return numOld;
 }
 
 /**
